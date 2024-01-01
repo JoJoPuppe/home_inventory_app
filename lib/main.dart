@@ -1,44 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_zxing/flutter_zxing.dart';
+import 'views/settings/settings_screen.dart';
+import 'views/items/add_item.dart';
+import 'provider/settings_provider.dart';
+import 'package:provider/provider.dart';
+import '/models/item_model.dart';
+import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
+import '/provider/camera_manager.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SettingsProvider settingsProvider = SettingsProvider();
+  await settingsProvider.loadSettings();
+  await CameraManager.instance.init();
+
+  runApp(
+    ChangeNotifierProvider.value(
+      value: settingsProvider,
+      child: const HomeInventoryApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HomeInventoryApp extends StatelessWidget {
 
+  const HomeInventoryApp({Key? key}) : super(key: key); // Receive prefs
+  // const HomeInventoryApp({super.key});
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Home Inventory',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const InventoryHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class InventoryHomePage extends StatefulWidget {
+  const InventoryHomePage({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -52,52 +54,111 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<InventoryHomePage> createState() => _InventoryHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _InventoryHomePageState extends State<InventoryHomePage> {
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  Future<List<Item>> getAllItems() async {
+    return CreateItemService.getItems(context);
+  }
+
+  String buildImageUrl(String image) {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    return "$apiDomain/$image";
   }
 
   @override
+  //ignore: must_call_super
+  // Future<List<Item>>? _itemList;
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ReaderWidget(
-        actionButtonsAlignment: Alignment.topCenter,
-        onScan: (Code result) async {
-          print(result);
-        },
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
+      body: itemListWidget(),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const MyCustomForm(),
+              settings: const RouteSettings(name: "/add_item")
+            ),
+          );
+          
+        },
+        tooltip: 'Add Item',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Widget itemListWidget() {
+  return FutureBuilder(
+    builder: (context, snapshot) {
+      if (snapshot.data == null) {
+        return const Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+        return ListView.builder(
+          padding: const EdgeInsets.all(2),
+          itemCount: snapshot.data!.length,
+          itemBuilder: (context, index) {
+            Item item = snapshot.data![index];
+            return ListTile(
+                title: Text(item.name),
+                subtitle: Text(item.comment ?? ''),
+                leading: item.imageSMPath != null
+                    ? Image.network(buildImageUrl(item.imageSMPath!))
+                    : const Icon(Icons.storage),
+                isThreeLine: true,
+                trailing: const Icon(Icons.more_vert),
+              );
+          },
+        );
+      } else if (snapshot.hasError) {
+        return Text('${snapshot.error}');
+      } else {
+        return const Text('No data');
+      }
+    },
+    future: CreateItemService.getItems(context),
+  );
   }
 }
