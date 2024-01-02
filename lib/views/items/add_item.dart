@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/views/code_scanner.dart';
 import '/views/camera/camera_view.dart';
+import '/views/items/select_parent.dart';
 import 'dart:typed_data';
 
 class MyCustomForm extends StatefulWidget {
@@ -123,6 +124,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 },
               ),
             ),
+            const SelectParentModal(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(

@@ -6,19 +6,6 @@ import 'package:flutter/material.dart';
 import '/models/item_model.dart';
 
 class CreateItemService {
-  static Future<Map<String, bool>> createItem(BuildContext context, Map<String, dynamic> data) async {
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
-    final url = Uri.parse('$apiDomain/items/');
-    final headers = {
-      'Content-Type': 'application/json; charset=UTF-8',
-    };
-    final response = await http.post(url, headers: headers, body: jsonEncode(data));
-    if (response.statusCode == 200) {
-      return {'success': true};
-    } else {
-      throw Exception('Failed to create item.');
-    }
-  }
   static Future<Map<String, bool>> addItem(BuildContext context, Map<String, dynamic> data) async {
     // Pick an image
     if (data.containsKey('image') && data['image'] != null) {
@@ -52,9 +39,24 @@ class CreateItemService {
     }
   }
 
+  static Future<List<Item>> getChildren(BuildContext context, int? id) async {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    id = id ?? 0;
+    final url = Uri.parse('$apiDomain/items/children/$id');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
+      print(items);
+      return items;
+    } else {
+      throw Exception('Failed to load items.');
+    }
+
+  }
+
   static Future<List<Item>> getItems(BuildContext context) async {
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
-    print(apiDomain);
     final url = Uri.parse('$apiDomain/items/');
     final response = await http.get(url);
     if (response.statusCode == 200) {
