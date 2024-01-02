@@ -58,9 +58,11 @@ class InventoryHomePage extends StatefulWidget {
 }
 
 class _InventoryHomePageState extends State<InventoryHomePage> {
+  List<Item> _items = [];
 
   Future<List<Item>> getAllItems() async {
-    return CreateItemService.getItems(context);
+    List<Item> insideItems = await CreateItemService.getItems(context);
+    return insideItems;
   }
 
   String buildImageUrl(String image) {
@@ -69,6 +71,17 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    final newItems = await getAllItems();
+    setState(() {
+       _items = newItems;
+    });
+  }
   //ignore: must_call_super
   // Future<List<Item>>? _itemList;
 
@@ -112,7 +125,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
           ],
         ),
       ),
-      body: itemListWidget(),
+      body: newItemListWidget(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -130,35 +143,47 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
     );
   }
 
-  Widget itemListWidget() {
-  return FutureBuilder(
-    builder: (context, snapshot) {
-      if (snapshot.data == null) {
-        return const Center(child: CircularProgressIndicator());
-      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-        return ListView.builder(
-          padding: const EdgeInsets.all(2),
-          itemCount: snapshot.data!.length,
+  Widget newItemListWidget() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        final newItems = await getAllItems();
+        setState(() {
+          _items = newItems;
+        });
+      },
+      child: _items.isNotEmpty
+      ? ListView.builder(
+          itemCount: _items.length,
           itemBuilder: (context, index) {
-            Item item = snapshot.data![index];
             return ListTile(
-                title: Text(item.name),
-                subtitle: Text(item.comment ?? ''),
-                leading: item.imageSMPath != null
-                    ? Image.network(buildImageUrl(item.imageSMPath!))
-                    : const Icon(Icons.storage),
-                isThreeLine: true,
-                trailing: const Icon(Icons.more_vert),
-              );
+              title: Text(_items[index].name),
+              subtitle: Text(_items[index].comment ?? ''),
+              leading: _items[index].imageSMPath != null
+                  ? Image.network(buildImageUrl(_items[index].imageSMPath!))
+                  : const Icon(Icons.storage),
+              trailing: const Icon(Icons.more_vert),
+            );
           },
-        );
-      } else if (snapshot.hasError) {
-        return Text('${snapshot.error}');
-      } else {
-        return const Text('No data');
-      }
-    },
-    future: CreateItemService.getItems(context),
-  );
+        )
+      : LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: SizedBox(
+                height: constraints.maxHeight,
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('There is not data.'),
+                      Text('Pull to refresh.'),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        )
+    );
   }
 }

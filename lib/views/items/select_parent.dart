@@ -10,18 +10,14 @@ class SelectParentModal extends StatefulWidget {
 }
 
 class SelectParentModalState extends State<SelectParentModal> {
-  late Future<List<Item>> items;
+  late Future<List<Item>> itemsFuture;
   List<dynamic> parentStack = [];
 
-  @override
-  void initState() {
-    super.initState();
-    items = CreateItemService.getChildren(context, null);
-  }
-
   void handleItemTap(Item item) {
-    parentStack.add(items); // Save current list to the stack
-    items = CreateItemService.getChildren(context, item.itemId);
+    // parentStack.add(itemsFuture); // Save current list to the stack
+    setState(() {
+      itemsFuture = CreateItemService.getChildren(context, item.itemId);
+    });
   }
 
   @override
@@ -32,13 +28,14 @@ class SelectParentModalState extends State<SelectParentModal> {
         showModalBottomSheet(
           context: context,
           builder: (BuildContext context) {
+            itemsFuture = CreateItemService.getChildren(context, null);
             return SizedBox(
               height: 500,
               width: MediaQuery.of(context).size.width,
               child: Column(
                 children: [
                 FutureBuilder<List<Item>>(
-                  future: items,
+                  future: itemsFuture,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       List<Item> items = snapshot.data!;
@@ -49,7 +46,17 @@ class SelectParentModalState extends State<SelectParentModal> {
                           itemBuilder: (context, index) {
                             return ListTile(
                               title: Text(items[index].name),
-                              onTap: () => handleItemTap(items[index]),
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Item selected: ${items[index].name}'),
+                                  ),
+                                );
+                              },
+                              trailing: GestureDetector(
+                                onTap: () => handleItemTap(items[index]),
+                                child: const Icon(Icons.chevron_right),
+                              ),
                             );
                           },
                         )
