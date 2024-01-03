@@ -7,6 +7,8 @@ class Item {
   final String? comment;
   final String? imageSMPath;
   final String? imageLGPath;
+  final int? labelId;
+  final bool? hasChildren;
   final DateTime? creationDate;
   final DateTime? lastUpdate;
   final List<String>? tags;
@@ -17,8 +19,10 @@ class Item {
               this.comment,
               this.imageSMPath,
               this.imageLGPath,
+              this.hasChildren,
               this.creationDate,
               this.lastUpdate,
+              this.labelId,
               this.tags,
               });
 
@@ -27,7 +31,9 @@ class Item {
           name = json['name'] as String,
           parentItemId = json['parent_item_id'] as int?,
           comment = json['comment'] as String?,
+          hasChildren = json['has_children'] as bool?,
           imageSMPath = json['image_sm_path'] as String?,
+          labelId = json['label_id'] as int?,
           imageLGPath = json['image_lg_path'] as String?,
           creationDate = json['creation_date'] != null
             ? DateTime.tryParse(json['creation_date'])
@@ -38,7 +44,6 @@ class Item {
           tags = json['tags'] != null
             ? List<String>.from(json['tags'])
             : null;
-
 }
     // item_id = Column(Integer, primary_key=True, index=True)
     // label_id = Column(Integer, ForeignKey('labels.label_id'))

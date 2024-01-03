@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '/models/item_model.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/provider/camera_manager.dart';
+import '/views/items/view_edit_item.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,15 +42,6 @@ class HomeInventoryApp extends StatelessWidget {
 
 class InventoryHomePage extends StatefulWidget {
   const InventoryHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -156,6 +148,16 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
           itemCount: _items.length,
           itemBuilder: (context, index) {
             return ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ViewEditItem(
+                      item: _items[index],
+                    )
+                  )
+                );
+              },
               title: Text(_items[index].name),
               subtitle: Text(_items[index].comment ?? ''),
               leading: _items[index].imageSMPath != null

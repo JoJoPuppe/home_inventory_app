@@ -4,6 +4,7 @@ import '/views/code_scanner.dart';
 import '/views/camera/camera_view.dart';
 import '/views/items/select_parent.dart';
 import 'dart:typed_data';
+import '/models/item_model.dart';
 
 class MyCustomForm extends StatefulWidget {
   const MyCustomForm({Key? key}) : super(key: key);
@@ -13,31 +14,43 @@ class MyCustomForm extends StatefulWidget {
 }
 
 class MyCustomFormState extends State<MyCustomForm> {
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
+  Item? selectedItem;
   final _formKey = GlobalKey<FormState>();
   Future<Map<String, bool>>? _sendResopnse;
-  String _dropdownValue = 'Option 1';
   Uint8List? _backgroundImage;
   // bool _isLoading = false;
   // String _message = '';
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // setState(() {
-      //   _isLoading = true;
-      // }); 
-      // Perform the POST request
       setState(() {
         _sendResopnse = CreateItemService.addItem(
           context,
           {
-            'comment': _dropdownValue,
-            'name': _controller.text,
+            'name': _nameController.text,
+            'label_id': _codeController.text,
+            'comment': _commentController.text,
             'image': _backgroundImage,
+            'parent_item_id': selectedItem?.itemId.toString(),
         });
       //   _isLoading = false;
       //   _message = response.success ? 'Request successful!' : 'Request failed.';
+      });
+    }
+  }
+
+  void openSelectParentModal() async {
+    final Item? newItem = await showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return const SelectParentContent();
+    });
+    if (newItem != null) {
+      setState(() {
+        selectedItem = newItem;
       });
     }
   }
@@ -53,24 +66,9 @@ class MyCustomFormState extends State<MyCustomForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            DropdownButtonFormField<String>(
-              value: _dropdownValue,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _dropdownValue = newValue!;
-                });
-              },
-              items: <String>['Option 1', 'Option 2', 'Option 3']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-            ),
             TextFormField(
-              decoration: const InputDecoration(labelText: 'Enter your text'),
-              controller: _controller,
+              decoration: const InputDecoration(labelText: 'Item Name'),
+              controller: _nameController,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter some text';
@@ -78,12 +76,27 @@ class MyCustomFormState extends State<MyCustomForm> {
                 return null;
               },
             ),
+            TextFormField(
+              decoration: const InputDecoration(labelText: 'Comment'),
+              controller: _commentController,
+              validator: (value) {
+                return null;
+              },
+            ),
             Row(
               children: <Widget>[
                 Expanded(
                   child: TextFormField(
-                    decoration: const InputDecoration(labelText: 'Enter your text'),
+                    decoration: const InputDecoration(labelText: 'Barcode'),
                     controller: _codeController,
+                    validator: (value) {
+                      //validate only numbers
+                      if (value != null && value.isNotEmpty) {
+                        if (int.tryParse(value) == null) {
+                          return 'Please enter a valid number';
+                        }
+                      }
+                    }
                   ),
                 ),
                 ElevatedButton(
@@ -124,7 +137,26 @@ class MyCustomFormState extends State<MyCustomForm> {
                 },
               ),
             ),
-            const SelectParentModal(),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: openSelectParentModal,
+                    icon: const Icon(Icons.arrow_drop_down),
+                    label: const Text('Select Parent')
+                  )
+                ),
+              ],
+            ),
+            DefaultTextStyle.merge(
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              child: Center(
+                child: selectedItem == null ? const Text('No item selected') : Text(selectedItem!.name),
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
               child: ElevatedButton(
