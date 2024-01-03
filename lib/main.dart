@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '/models/item_model.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/provider/camera_manager.dart';
-import '/views/items/view_edit_item.dart';
+import '/views/items/view_item.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ class HomeInventoryApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
         useMaterial3: true,
       ),
-      home: const InventoryHomePage(title: 'Flutter Demo Home Page'),
+      home: const InventoryHomePage(title: 'Home Inventory Overview'),
     );
   }
 }
@@ -53,7 +53,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   List<Item> _items = [];
 
   Future<List<Item>> getAllItems() async {
-    List<Item> insideItems = await CreateItemService.getItems(context);
+    List<Item> insideItems = await CreateItemService.getChildren(context, null);
     return insideItems;
   }
 
@@ -152,7 +152,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ViewEditItem(
+                    builder: (context) => ViewItem(
                       item: _items[index],
                     )
                   )

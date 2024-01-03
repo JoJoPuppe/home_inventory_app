@@ -235,10 +235,10 @@ class DisplayPictureScreen extends StatefulWidget {
       : super(key: key);
 
   @override
-  _DisplayPictureScreenState createState() => _DisplayPictureScreenState();
+  DisplayPictureScreenState createState() => DisplayPictureScreenState();
 }
 
-class _DisplayPictureScreenState extends State<DisplayPictureScreen> {
+class DisplayPictureScreenState extends State<DisplayPictureScreen> {
   late Future<void> _cropImageFuture;
 
   @override

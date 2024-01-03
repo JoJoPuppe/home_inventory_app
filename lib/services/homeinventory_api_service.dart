@@ -26,7 +26,11 @@ class CreateItemService {
     request.fields['name'] = data['name'] ?? '';
     request.fields['comment'] = data['comment'] ?? '';
     request.fields['label_id'] = data['label_id'] ?? '';
-    request.fields['parent_item_id'] = data['parent_item_id'];
+    if (data.containsKey('parent_item_id')) {
+      if (data['parent_item_id'] != null && data['parent_item_id'] != 'null') {
+        request.fields['parent_item_id'] = data['parent_item_id'];
+      }
+    }
 
     // Send the request
 
@@ -64,6 +68,18 @@ class CreateItemService {
       return items;
     } else {
       throw Exception('Failed to load items.');
+    }
+  }
+  static Future<Item> getItem(BuildContext context, int id) async {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    final url = Uri.parse('$apiDomain/items/$id');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final dynamic data = jsonDecode(response.body);
+      final Item item = Item.fromJson(data);
+      return item;
+    } else {
+      throw Exception('Failed to load item.');
     }
   }
 

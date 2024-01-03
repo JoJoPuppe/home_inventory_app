@@ -6,6 +6,8 @@ import '/views/items/select_parent.dart';
 import 'dart:typed_data';
 import '/views/camera/camera_view.dart';
 import '/views/items/child_list.dart';
+import '/provider/settings_provider.dart';
+import 'package:provider/provider.dart';
 
 class ViewEditItem extends StatefulWidget {
   final Item item;
@@ -22,7 +24,7 @@ class ViewEditItemState extends State<ViewEditItem> {
   Item? selectedItem;
   final _formKey = GlobalKey<FormState>();
   Future<Map<String, bool>>? _sendResopnse;
-  Uint8List? _backgroundImage;
+  Image? _backgroundImage;
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -48,6 +50,9 @@ class ViewEditItemState extends State<ViewEditItem> {
     _nameController.text = widget.item.name;
     _commentController.text = widget.item.comment ?? "";
     _codeController.text = widget.item.labelId.toString();
+    if (widget.item.imageLGPath != null) {
+      _backgroundImage = Image.network(buildImageUrl(widget.item.imageLGPath!));
+    }
     selectedItem = widget.item;
   }
 
@@ -102,6 +107,11 @@ class ViewEditItemState extends State<ViewEditItem> {
     }
   }
 
+  String buildImageUrl(String image) {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    return "$apiDomain/$image";
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -113,6 +123,33 @@ class ViewEditItemState extends State<ViewEditItem> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 80,
+                  child: SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: GestureDetector(
+                      child: ClipOval(
+                        child: _backgroundImage ?? const Icon(Icons.camera_alt)
+                      ),
+                      onTap: () async {
+                        final Uint8List? squareImage = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TakePictureScreen(),
+                          )
+                        );
+                        if (squareImage != null) {
+                          setState(() {
+                            _backgroundImage = Image.memory(squareImage);
+                          });
+                        }
+                    },
+                  ),
+                ),
+              ),
+              ),
               const Text('Name'),
               Row(
                 children: [
@@ -167,60 +204,35 @@ class ViewEditItemState extends State<ViewEditItem> {
                   ),
                 ]
               ),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextFormField(
-                    decoration: const InputDecoration(labelText: 'Barcode'),
-                    controller: _codeController,
-                    validator: (value) {
-                      //validate only numbers
-                      if (value != null && value.isNotEmpty) {
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                      }
-                    }
+              const Text('Comment'),
+              Row(
+                children: [
+                  Expanded(
+                    child: DefaultTextStyle.merge(
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
+                      child: Text(_codeController.text),
                   ),
-                ),
-                ElevatedButton(
-                  child: const Text('Scan'),
-                  onPressed: () async {
-                    final code = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ScannerWidget(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: ElevatedButton(
+                        child: const Text('New Scan'),
+                        onPressed: () async {
+                          final code = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ScannerWidget(),
+                            )
+                          );
+                          _codeController.text = code;
+                        }
                       )
-                    );
-                    _codeController.text = code;
-                  }
-                )
-              ]
-            ),
-            SizedBox(
-              height: 80,
-              width: 80,
-              child: 
-              IconButton(
-                iconSize: 80,
-                icon: _backgroundImage != null
-                  ? Image.memory(_backgroundImage!)
-                  : const Icon(Icons.camera_alt),
-                onPressed: () async {
-                  final Uint8List? squareImage = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TakePictureScreen(),
-                    )
-                  );
-                  if (squareImage != null) {
-                    setState(() {
-                      _backgroundImage = squareImage;
-                    });
-                  }
-                },
+                  ),
+                ]
               ),
-            ),
             Row(
               children: [
                 Expanded(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
-import '/views/items/view_edit_item.dart';
+import '/views/items/view_item.dart';
 import '/models/item_model.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
@@ -60,7 +60,7 @@ class _ItemChildListState extends State<ItemChildList> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ViewEditItem(
+                    builder: (context) => ViewItem(
                       item: _items[index],
                     )
                   )
