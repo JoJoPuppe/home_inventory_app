@@ -90,6 +90,13 @@ class SelectParentContentState extends State<SelectParentContent> {
         width: MediaQuery.of(context).size.width,
         child: Column(
           children: [
+          Align(
+            alignment: Alignment.topLeft,
+            child: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => handleBackTap(),
+              ),
+          ),
           FutureBuilder<List<Item>>(
             future: itemsFuture,
             builder: (context, snapshot) {
@@ -119,9 +126,9 @@ class SelectParentContentState extends State<SelectParentContent> {
               backgroundColor: MaterialStateProperty.resolveWith<Color>(
                 (Set<MaterialState> states) {
                   if (states.contains(MaterialState.disabled)) {
-                    return Colors.grey;
+                    return Theme.of(context).colorScheme.primary.withOpacity(0.5);
                   }
-                  return Colors.green; // Use the component's default.
+                  return Theme.of(context).colorScheme.onTertiary; // Use the component's default.
                 },
               ),
             ),
@@ -130,10 +137,6 @@ class SelectParentContentState extends State<SelectParentContent> {
           ElevatedButton(
               child: const Text('Close BottomSheet'),
               onPressed: () => Navigator.pop(context),
-            ),
-          ElevatedButton(
-              child: const Text('Back'),
-              onPressed: () => handleBackTap(),
             ),
           ],
         )

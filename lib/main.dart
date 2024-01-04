@@ -13,7 +13,6 @@ void main() async {
   SettingsProvider settingsProvider = SettingsProvider();
   await settingsProvider.loadSettings();
   await CameraManager.instance.init();
-
   runApp(
     ChangeNotifierProvider.value(
       value: settingsProvider,
@@ -23,7 +22,6 @@ void main() async {
 }
 
 class HomeInventoryApp extends StatelessWidget {
-
   const HomeInventoryApp({Key? key}) : super(key: key); // Receive prefs
   // const HomeInventoryApp({super.key});
   // This widget is the root of your application.
@@ -32,7 +30,10 @@ class HomeInventoryApp extends StatelessWidget {
     return MaterialApp(
       title: 'Home Inventory',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.grey[100]!,
+          brightness: Brightness.dark,
+          surface: Colors.grey[100]!),
         useMaterial3: true,
       ),
       home: const InventoryHomePage(title: 'Home Inventory Overview'),
@@ -51,7 +52,6 @@ class InventoryHomePage extends StatefulWidget {
 
 class _InventoryHomePageState extends State<InventoryHomePage> {
   List<Item> _items = [];
-
   Future<List<Item>> getAllItems() async {
     List<Item> insideItems = await CreateItemService.getChildren(context, null);
     return insideItems;

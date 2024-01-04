@@ -82,5 +82,4 @@ class CreateItemService {
       throw Exception('Failed to load item.');
     }
   }
-
 }
