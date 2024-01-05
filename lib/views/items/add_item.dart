@@ -6,14 +6,14 @@ import '/views/items/select_parent.dart';
 import 'dart:typed_data';
 import '/models/item_model.dart';
 
-class MyCustomForm extends StatefulWidget {
-  const MyCustomForm({Key? key}) : super(key: key);
+class AddItem extends StatefulWidget {
+  const AddItem({Key? key}) : super(key: key);
   @override
 
-  MyCustomFormState createState() => MyCustomFormState();
+  AddItemState createState() => AddItemState();
 }
 
-class MyCustomFormState extends State<MyCustomForm> {
+class AddItemState extends State<AddItem> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
@@ -63,113 +63,128 @@ class MyCustomFormState extends State<MyCustomForm> {
       ),
       body: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Item Name'),
-              controller: _nameController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Comment'),
-              controller: _commentController,
-              validator: (value) {
-                return null;
-              },
-            ),
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: TextFormField(
-                    decoration: const InputDecoration(labelText: 'Barcode'),
-                    controller: _codeController,
-                    validator: (value) {
-                      //validate only numbers
-                      if (value != null && value.isNotEmpty) {
-                        if (int.tryParse(value) == null) {
-                          return 'Please enter a valid number';
-                        }
-                      }
-                    }
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  color: Colors.blueGrey[800]!,
                 ),
-                ElevatedButton(
-                  child: const Text('Scan'),
-                  onPressed: () async {
-                    final code = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ScannerWidget(),
-                      )
-                    );
-                    _codeController.text = code;
-                  }
-                )
-              ]
-            ),
-            SizedBox(
-              height: 80,
-              width: 80,
-              child: 
-              IconButton(
-                iconSize: 80,
-                icon: _backgroundImage != null
-                  ? Image.memory(_backgroundImage!)
-                  : const Icon(Icons.camera_alt),
-                onPressed: () async {
-                  final Uint8List? squareImage = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const TakePictureScreen(),
-                    )
-                  );
-                  if (squareImage != null) {
-                    setState(() {
-                      _backgroundImage = squareImage;
-                    });
-                  }
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                     floatingLabelBehavior: FloatingLabelBehavior.never,
+                     hintText: 'Enter the name of the item',
+                     contentPadding: EdgeInsets.all(15),
+                     border: InputBorder.none
+                   ),
+                  controller: _nameController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter some text';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'Comment'),
+                controller: _commentController,
+                validator: (value) {
+                  return null;
                 },
               ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: openSelectParentModal,
-                    icon: const Icon(Icons.arrow_drop_down),
-                    label: const Text('Select Parent')
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(labelText: 'Barcode'),
+                      controller: _codeController,
+                      validator: (value) {
+                        //validate only numbers
+                        if (value != null && value.isNotEmpty) {
+                          if (int.tryParse(value) == null) {
+                            return 'Please enter a valid number';
+                          }
+                        }
+                      }
+                    ),
+                  ),
+                  ElevatedButton(
+                    child: const Text('Scan'),
+                    onPressed: () async {
+                      final code = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ScannerWidget(),
+                        )
+                      );
+                      _codeController.text = code;
+                    }
                   )
+                ]
+              ),
+              SizedBox(
+                height: 80,
+                width: 80,
+                child: 
+                IconButton(
+                  iconSize: 80,
+                  icon: _backgroundImage != null
+                    ? Image.memory(_backgroundImage!)
+                    : const Icon(Icons.camera_alt),
+                  onPressed: () async {
+                    final Uint8List? squareImage = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const TakePictureScreen(),
+                      )
+                    );
+                    if (squareImage != null) {
+                      setState(() {
+                        _backgroundImage = squareImage;
+                      });
+                    }
+                  },
                 ),
-              ],
-            ),
-            DefaultTextStyle.merge(
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
               ),
-              child: Center(
-                child: selectedItem == null ? const Text('No item selected') : Text(selectedItem!.name),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: openSelectParentModal,
+                      icon: const Icon(Icons.arrow_drop_down),
+                      label: const Text('Select Parent')
+                    )
+                  ),
+                ],
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Submit'),
+              DefaultTextStyle.merge(
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+                child: Center(
+                  child: selectedItem == null ? const Text('No item selected') : Text(selectedItem!.name),
+                ),
               ),
-            ),
-            // if (_message.isNotEmpty)
-            //   Text(_message),
-           if (_sendResopnse != null)
-             buildFutureBuilder(),
-
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton(
+                  onPressed: _submitForm,
+                  child: const Text('Submit'),
+                ),
+              ),
+              // if (_message.isNotEmpty)
+              //   Text(_message),
+             if (_sendResopnse != null)
+               buildFutureBuilder(),
+          
+            ],
+          ),
         ),
       ),
     );

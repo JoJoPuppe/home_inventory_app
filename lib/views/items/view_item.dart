@@ -5,6 +5,7 @@ import '/views/items/edit_item.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '/views/items/list_item.dart';
 
 class ViewItem extends StatefulWidget {
   final Item item;
@@ -15,8 +16,10 @@ class ViewItem extends StatefulWidget {
 }
 
 class ViewItemState extends State<ViewItem> {
+  String? labelId;
   Item? parentItem;
   Image? _backgroundImage;
+  String apiDomain = '';
   List<Item> _items = [];
 
   @override
@@ -24,9 +27,14 @@ class ViewItemState extends State<ViewItem> {
     super.initState();
     getParentItem();
     _fetchInitialData();
+    apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+
+    labelId = widget.item.labelId == null ? "No barcode" : widget.item.labelId.toString();
+      
     if (widget.item.imageLGPath != null) {
       _backgroundImage = Image.network(
            buildImageUrl(widget.item.imageLGPath!),
+           fit: BoxFit.fitWidth
            );
     }
   }
@@ -58,7 +66,7 @@ class ViewItemState extends State<ViewItem> {
   }
 
   String formatDateTime(DateTime dateTime) {
-    DateFormat dateFormat = DateFormat('yy-MM-dd'); // Example format
+    DateFormat dateFormat = DateFormat('MM.dd.yy'); // Example format
     return dateFormat.format(dateTime);
   }
 
@@ -68,27 +76,26 @@ class ViewItemState extends State<ViewItem> {
       body: CustomScrollView(
           slivers: [
             SliverAppBar(
-                actions: [
-                  IconButton.filledTonal(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditItem(
-                            item: widget.item,
-                          )
-                        )
-                      );
-                    }
-                  )
-                ],
+                backgroundColor: Theme.of(context).colorScheme.background,
                 floating: true,
-                expandedHeight: 350,
+                expandedHeight: (MediaQuery.of(context).size.width - kToolbarHeight) * 0.8,
                 flexibleSpace: FlexibleSpaceBar(
-                  background: FittedBox(
-                  fit: BoxFit.cover,
-                  child: _backgroundImage ?? const Icon(Icons.camera_alt)),
+                  centerTitle: true,
+                  titlePadding: const EdgeInsets.all(0.0),
+                  background: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      MediaQuery.of(context).size.width * 0.25,
+                      MediaQuery.of(context).size.height * 0.07,
+                      MediaQuery.of(context).size.width * 0.25,
+                      MediaQuery.of(context).size.height * 0.07
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(48.0),
+                      child: FittedBox(
+                        fit: BoxFit.fitWidth,
+                        child: _backgroundImage ?? const Icon(Icons.camera_alt)),
+                    ),
+                  ),
                 title: Text(
                   widget.item.name
                 ),
@@ -96,82 +103,73 @@ class ViewItemState extends State<ViewItem> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 0.0),
                 child: SizedBox(
-                  height: 160,
+                  height: MediaQuery.of(context).size.height * 0.2,
                   child: Column(
                     children: [
                       Row(
-                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                       children: [
-                         Text(
-                           'Last Update: ${formatDateTime(widget.item.lastUpdate!)}',
-                         ),
-                         Text(
-                           'Created: ${formatDateTime(widget.item.creationDate!)}',
-                         ),
-                       ],
-                        
-                      ),
-                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Card(
-                            elevation: 0,
-                            color: Theme.of(context).colorScheme.surfaceVariant,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SizedBox(
-                                width: 80,
-                                height: 50, 
-                                child: 
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        DefaultTextStyle.merge(
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          child: const Text("Barcode"),
-                                        ),
-                                        Text(widget.item.labelId.toString()),
-                                      ],
-                                    ),
-                                ),
-                              ),
-                            ),
+                            Column(
+
+                              children: [
+                                const Icon(Icons.qr_code),
+                                const SizedBox(width: 8),
+                                Text(labelId ?? "No barcode")
+                              ],
                           ),
-                          Card(
-                            elevation: 0,
-                            color: Theme.of(context).colorScheme.surfaceVariant,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: SizedBox(
-                                height: 50, 
-                                child: 
-                                  Center(
-                                    child: Column(
-                                      children: [
-                                        DefaultTextStyle.merge(
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          child: const Text("Parent Item"),
-                                        ),
-                                        Text(parentItem?.name ?? "No parent"),
-                                      ],
-                                    ),
-                                ),
-                              ),
+                          Column(
+                            children: [
+                                const Icon(Icons.category),
+                                const SizedBox(width: 8),
+                                Text(
+                                overflow: TextOverflow.ellipsis,
+                                parentItem?.name ?? "No parent")
+                            ]
+                          ),
+                          OutlinedButton(
+                          child: const Text("Details"),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditItem(
+                                      item: widget.item,
+                                    )
+                                  )
+                                );
+                              }
+                            ),
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                            child: IconButton(
+                              color: Theme.of(context).colorScheme.primary,
+                              icon: const Icon(
+                              Icons.edit),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditItem(
+                                      item: widget.item,
+                                    )
+                                  )
+                                );
+                              }
                             ),
                           )
                         ]
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(
-                        widget.item.comment ?? "No comment"),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Text(
+                            widget.item.comment ?? "No comment"),
+                          ),
+                        ),
                       ),
                     ]
                   ),
@@ -196,44 +194,13 @@ class ViewItemState extends State<ViewItem> {
                   );
                 }
                 if (snapshot.hasData) {
-                  return DecoratedSliver(
-                    decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceVariant,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(48),
-                        bottomRight: Radius.circular(48),
-                        topLeft: Radius.circular(48), topRight: Radius.circular(48),
-                      ),
+                  return SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return ListItem(item: _items[index], apiDomain: apiDomain, context: context);
+                      },
+                      childCount: _items.length
                     ),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(0.0, 20.0, 0.0, 3.0),
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ViewItem(
-                                      item: _items[index],
-                                    )
-                                  )
-                                );
-                              },
-                              title: Text(_items[index].name),
-                              leading: ClipOval(
-                                child: _items[index].imageLGPath != null
-                                  ? Image.network(buildImageUrl(_items[index].imageLGPath!))
-                                  : const Icon(Icons.storage),
-                              ),
-                              trailing: const Icon(Icons.more_vert),
-                            ),
-                          );
-                        },
-                        childCount: _items.length
-                      ),
-                    )
                   );
                 } else {
                     return const SliverToBoxAdapter(

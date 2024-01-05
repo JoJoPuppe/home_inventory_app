@@ -7,7 +7,6 @@ import '/models/item_model.dart';
 import '/views/items/select_parent.dart';
 import 'dart:typed_data';
 import '/views/camera/camera_view.dart';
-import '/views/items/child_list.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -50,7 +49,7 @@ class EditItemState extends State<EditItem> {
     getParentItem();
     _nameController.text = widget.item.name;
     _commentController.text = widget.item.comment ?? "";
-    _codeController.text = widget.item.labelId.toString();
+    _codeController.text = widget.item.labelId == null ? "No barcode" : widget.item.labelId.toString();
     if (widget.item.imageLGPath != null) {
       _backgroundImage = Image.network(buildImageUrl(widget.item.imageLGPath!));
     }
@@ -126,98 +125,131 @@ class EditItemState extends State<EditItem> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.item.name),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(
+        widget.item.name),
       ),
       body: Form(
         key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              child: ListTile(
-                  title: const Text('Name'),
-                  subtitle: Text(_nameController.text),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () => _showEditDialog(_nameController),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(48.0),
+                  child: SizedBox(
+                  height: 100,
+                  width: 100,
+                  child: _backgroundImage ?? const Icon(Icons.camera_alt)),
                 ),
-            ),
-            Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              child: ListTile(
-                  title: const Text('Foto'),
-                  subtitle: const Text('Retake photo'),
-                  trailing: 
-                  SizedBox(
-                    width: 40,
-                    child: ClipOval(
-                      child: _backgroundImage ?? const Icon(Icons.camera_alt),
-                    ),
-                  ),
-                  onTap: () async {
-                    final Uint8List? squareImage = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TakePictureScreen(),
-                        ));
-                    if (squareImage != null) {
-                      setState(() {
-                        _backgroundImage = Image.memory(squareImage);
-                      });
-                    }
-                  },
-                ),
-            ),
-            Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              child: ListTile(
-                  title: const Text('Comment'),
-                  subtitle: Text(_commentController.text),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () => _showEditDialog(_commentController),
-                ),
-            ),
-            Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              child: ListTile(
-                  title: const Text('Barcode'),
-                  subtitle: Text(_codeController.text),
-                  trailing: const Icon(Icons.qr_code),
-                  onTap: () async {
-                    final code = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScannerWidget(),
-                        ));
-                    _codeController.text = code;
-                  }
-                ),
-            ),
-            Card(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              child: ListTile(
-                  title: const Text('Parent Item'),
-                  subtitle: 
-                    parentItem == null
-                        ? const Text('No item selected')
-                        : Text(parentItem!.name),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () async {
-                    openSelectParentModal();
-                  },
-                ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: ElevatedButton(
-                onPressed: _submitForm,
-                child: const Center(child: Text('Update')),
               ),
-            ),
-            // if (_message.isNotEmpty)
-            //   Text(_message),
-            if (_sendResopnse != null) buildFutureBuilder(),
-          ],
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25),
+                  )
+                ),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: ListTile(
+                    title: const Text('Name'),
+                    subtitle: Text(_nameController.text),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () => _showEditDialog(_nameController),
+                  ),
+              ),
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25),
+                  )
+                ),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: ListTile(
+                    title: const Text('Foto'),
+                    subtitle: const Text('Retake photo'),
+                    trailing: const Icon(Icons.camera_alt),
+                    onTap: () async {
+                      final Uint8List? squareImage = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TakePictureScreen(),
+                          ));
+                      if (squareImage != null) {
+                        setState(() {
+                          _backgroundImage = Image.memory(squareImage);
+                        });
+                      }
+                    },
+                  ),
+              ),
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25),
+                  )
+                ),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: ListTile(
+                    title: const Text('Comment'),
+                    subtitle: Text(_commentController.text == '' ? 'No comment' : _commentController.text),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () => _showEditDialog(_commentController),
+                  ),
+              ),
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25),
+                  )
+                ),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: ListTile(
+                    title: const Text('Barcode'),
+                    subtitle: Text(_codeController.text),
+                    trailing: const Icon(Icons.qr_code),
+                    onTap: () async {
+                      final code = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScannerWidget(),
+                          ));
+                      _codeController.text = code;
+                    }
+                  ),
+              ),
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(25),
+                  )
+                ),
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                child: ListTile(
+                    title: const Text('Parent Item'),
+                    subtitle: 
+                      parentItem == null
+                          ? const Text('No item selected')
+                          : Text(parentItem!.name),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () async {
+                      openSelectParentModal();
+                    },
+                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: ElevatedButton(
+                  onPressed: _submitForm,
+                  child: const Center(child: Text('Update')),
+                ),
+              ),
+              // if (_message.isNotEmpty)
+              //   Text(_message),
+              if (_sendResopnse != null) buildFutureBuilder(),
+            ],
+          ),
         ),
       ),
     );

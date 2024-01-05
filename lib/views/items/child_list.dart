@@ -4,7 +4,7 @@ import '/views/items/view_item.dart';
 import '/models/item_model.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
-
+  
 class ItemChildList extends StatefulWidget {
   const ItemChildList({super.key, required this.item});
 
