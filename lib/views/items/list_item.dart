@@ -50,11 +50,11 @@ class ListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return 
     Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 0.0),
+      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
       child: Ink(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
-          borderRadius: const BorderRadius.all(
+        decoration: const BoxDecoration(
+          color: Colors.transparent ,
+          borderRadius: BorderRadius.all(
             Radius.circular(25),
           ),
         ),
@@ -66,23 +66,31 @@ class ListItem extends StatelessWidget {
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                    child: SizedBox(
-                      width: 60,
-                      height: 60,
-                      child:
-                        item.imageLGPath != null
-                        ? Image.network(buildImageUrl(item.imageLGPath!))
-                        : const Icon(Icons.storage),
+                Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(20),
+                        ),
+                        child: SizedBox(
+                          width: 60,
+                          height: 60,
+                          child:
+                            item.imageLGPath != null
+                            ? Image.network(buildImageUrl(item.imageLGPath!))
+                            : Container(
+                              color: Theme.of(context).colorScheme.surfaceVariant,
+                              child: const Icon(Icons.camera_alt),
+                            ),
+                          ),
                       ),
-                  ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(item.name),
+                  ],
                 ),
-                Text(item.name),
                 PopupMenuButton<String>(
                   color: Theme.of(context).colorScheme.surfaceVariant,
                   onSelected: _onSelected,

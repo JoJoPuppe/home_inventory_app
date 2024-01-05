@@ -76,23 +76,34 @@ class ViewItemState extends State<ViewItem> {
       body: CustomScrollView(
           slivers: [
             SliverAppBar(
-                backgroundColor: Theme.of(context).colorScheme.background,
+                pinned: true,
                 floating: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context, '/', (route) => false 
+                      );
+                    }
+                  )
+                ],
+                backgroundColor: Theme.of(context).colorScheme.background,
                 expandedHeight: (MediaQuery.of(context).size.width - kToolbarHeight) * 0.8,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.all(0.0),
+                  titlePadding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 10.0),
                   background: Padding(
                     padding: EdgeInsets.fromLTRB(
                       MediaQuery.of(context).size.width * 0.25,
-                      MediaQuery.of(context).size.height * 0.07,
+                      MediaQuery.of(context).size.height * 0.05,
                       MediaQuery.of(context).size.width * 0.25,
-                      MediaQuery.of(context).size.height * 0.07
+                      MediaQuery.of(context).size.height * 0.05
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(48.0),
                       child: FittedBox(
-                        fit: BoxFit.fitWidth,
+                        fit: BoxFit.cover,
                         child: _backgroundImage ?? const Icon(Icons.camera_alt)),
                     ),
                   ),
@@ -128,7 +139,7 @@ class ViewItemState extends State<ViewItem> {
                                 parentItem?.name ?? "No parent")
                             ]
                           ),
-                          OutlinedButton(
+                          TextButton(
                           child: const Text("Details"),
                               onPressed: () {
                                 Navigator.push(

@@ -35,6 +35,7 @@ class SelectParentContent extends StatefulWidget {
 class SelectParentContentState extends State<SelectParentContent> {
   late Future<List<Item>> itemsFuture;
   List<dynamic> parentStack = [];
+  List<Item> parentNamesStack = [Item(itemId: 0, name: "Top Items")];
   String buttonText = "Select Parent";
   bool isButtonEnabled = false;
   Item? selectedItem;
@@ -46,8 +47,12 @@ class SelectParentContentState extends State<SelectParentContent> {
   }
 
   void handleItemTap(Item item) {
+    if (item.hasChildren != null && !item.hasChildren!) {
+      return;
+    }
     parentStack.add(itemsFuture); // Save current list to the stack
     setState(() {
+      parentNamesStack.add(item);
       itemsFuture = CreateItemService.getChildren(context, item.itemId);
     });
   }
@@ -55,32 +60,24 @@ class SelectParentContentState extends State<SelectParentContent> {
   void handleBackTap() {
     if (parentStack.isNotEmpty) {
       setState(() {
+        parentNamesStack.removeLast();
         itemsFuture = parentStack.removeLast();
       });
     }
+    else {
+      selectedItem = null;
+    }
   }
 
-  void updateButton(Item item) {
-    setState(() {
-      selectedItem = item;
-      buttonText = item.name;
-      isButtonEnabled = true;
-    });
-  }
-
-  Widget _buildTrailingWidget(Item item) {
+  Widget? _buildTrailingWidget(Item item) {
     if (item.hasChildren != null) {
       return item.hasChildren!
-        ? GestureDetector(
-            onTap: () => handleItemTap(item),
-            child: const Icon(Icons.chevron_right),
-          )
-        : const Icon(Icons.circle);
+        ? const Icon(Icons.chevron_right)
+        : null;
     } else {
       return const Icon(Icons.arrow_drop_up);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +89,15 @@ class SelectParentContentState extends State<SelectParentContent> {
           children: [
           Align(
             alignment: Alignment.topLeft,
-            child: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => handleBackTap(),
-              ),
+            child: Row(
+              children: [
+                IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => handleBackTap(),
+                  ),
+                  Text(parentNamesStack.last.name)
+              ],
+            ),
           ),
           FutureBuilder<List<Item>>(
             future: itemsFuture,
@@ -108,7 +110,8 @@ class SelectParentContentState extends State<SelectParentContent> {
                     itemBuilder: (context, index) {
                       return ListTile(
                         title: Text(items[index].name),
-                        onTap: () => updateButton(items[index]),
+                        onTap: () => handleItemTap(items[index]),
+                        onLongPress: () => Navigator.pop(context,items[index]),
                         trailing: _buildTrailingWidget(items[index]),
                       );
                     },
@@ -120,24 +123,12 @@ class SelectParentContentState extends State<SelectParentContent> {
               return const CircularProgressIndicator();
             },
           ),
-          ElevatedButton(
-            onPressed: isButtonEnabled ? () => Navigator.pop(context, selectedItem) : null,
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                (Set<MaterialState> states) {
-                  if (states.contains(MaterialState.disabled)) {
-                    return Theme.of(context).colorScheme.primary.withOpacity(0.5);
-                  }
-                  return Theme.of(context).colorScheme.onTertiary; // Use the component's default.
-                },
-              ),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Center(
+              child: Text('Hold long to select parent.')
             ),
-            child: Text(buttonText),
-          ),
-          ElevatedButton(
-              child: const Text('Close BottomSheet'),
-              onPressed: () => Navigator.pop(context),
-            ),
+          )
           ],
         )
       );

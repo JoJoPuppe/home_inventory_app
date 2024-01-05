@@ -18,6 +18,7 @@ class AddItemState extends State<AddItem> {
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
   Item? selectedItem;
+  String? _labelId;
   final _formKey = GlobalKey<FormState>();
   Future<Map<String, bool>>? _sendResopnse;
   Uint8List? _backgroundImage;
@@ -31,7 +32,7 @@ class AddItemState extends State<AddItem> {
           context,
           {
             'name': _nameController.text,
-            'label_id': _codeController.text,
+            'label_id': _labelId, 
             'comment': _commentController.text,
             'image': _backgroundImage,
             'parent_item_id': selectedItem?.itemId.toString(),
@@ -61,18 +62,53 @@ class AddItemState extends State<AddItem> {
       appBar: AppBar(
         title: const Text('Add Item'),
       ),
-      body: Form(
+      body:
+      Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
+              Center(
+                child: SizedBox(
+                  height: 120,
+                  width: 120,
+                  child: 
+                  IconButton(
+                    iconSize: 80,
+                    icon: _backgroundImage != null
+                      ? Image.memory(_backgroundImage!)
+                      : const Column(
+                        children: [
+                          Icon(Icons.camera_alt),
+                          Text('Take a Picture'),
+                        ],
+                      ),
+                    onPressed: () async {
+                      final Uint8List? squareImage = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TakePictureScreen(),
+                        )
+                      );
+                      if (squareImage != null) {
+                        setState(() {
+                          _backgroundImage = squareImage;
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  color: Colors.blueGrey[800]!,
+                  border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
                 child: TextFormField(
                   decoration: const InputDecoration(
@@ -90,92 +126,79 @@ class AddItemState extends State<AddItem> {
                   },
                 ),
               ),
-              TextFormField(
-                decoration: const InputDecoration(labelText: 'Comment'),
-                controller: _commentController,
-                validator: (value) {
-                  return null;
-                },
-              ),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(labelText: 'Barcode'),
-                      controller: _codeController,
-                      validator: (value) {
-                        //validate only numbers
-                        if (value != null && value.isNotEmpty) {
-                          if (int.tryParse(value) == null) {
-                            return 'Please enter a valid number';
-                          }
-                        }
-                      }
-                    ),
-                  ),
-                  ElevatedButton(
-                    child: const Text('Scan'),
-                    onPressed: () async {
-                      final code = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScannerWidget(),
-                        )
-                      );
-                      _codeController.text = code;
-                    }
-                  )
-                ]
-              ),
-              SizedBox(
-                height: 80,
-                width: 80,
-                child: 
-                IconButton(
-                  iconSize: 80,
-                  icon: _backgroundImage != null
-                    ? Image.memory(_backgroundImage!)
-                    : const Icon(Icons.camera_alt),
-                  onPressed: () async {
-                    final Uint8List? squareImage = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const TakePictureScreen(),
-                      )
-                    );
-                    if (squareImage != null) {
-                      setState(() {
-                        _backgroundImage = squareImage;
-                      });
-                    }
-                  },
+              const SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 1),
+
+                  // color: Theme.of(context).colorScheme.secondaryContainer,
+                ),
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                     floatingLabelBehavior: FloatingLabelBehavior.never,
+                     hintText: 'Write a comment',
+                     contentPadding: EdgeInsets.all(15),
+                     border: InputBorder.none
+                   ),
+                  controller: _commentController,
                 ),
               ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final code = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ScannerWidget(),
+                          )
+                        );
+                        setState(() {
+                          _labelId = code;
+                        });
+                      },
+                      icon: const Icon(Icons.qr_code),
+                      label: _labelId == null ? const Text('Scan Barcode') : Text(_labelId!),
+                    )
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: openSelectParentModal,
-                      icon: const Icon(Icons.arrow_drop_down),
-                      label: const Text('Select Parent')
+                      icon: const Icon(Icons.category),
+                      label: selectedItem == null ? const Text('Select Parent') : Text(selectedItem!.name),
                     )
                   ),
                 ],
               ),
-              DefaultTextStyle.merge(
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                child: Center(
-                  child: selectedItem == null ? const Text('No item selected') : Text(selectedItem!.name),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Submit'),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.primaryContainer)),
+                            onPressed: _submitForm,
+                            child: const Text('Submit'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               // if (_message.isNotEmpty)
@@ -186,7 +209,7 @@ class AddItemState extends State<AddItem> {
             ],
           ),
         ),
-      ),
+      )
     );
   }
   FutureBuilder<Map<String, bool>> buildFutureBuilder() {
@@ -204,6 +227,9 @@ class AddItemState extends State<AddItem> {
   }
   @override
   void dispose() {
+    _codeController.dispose();
+    _nameController.dispose();
+    _commentController.dispose();
     _codeController.dispose();
     super.dispose();
   }
