@@ -47,7 +47,7 @@ class SelectParentContentState extends State<SelectParentContent> {
   }
 
   void handleItemTap(Item item) {
-    if (item.hasChildren != null && !item.hasChildren!) {
+    if (item.childrenCount != null && item.childrenCount! == 0) {
       return;
     }
     parentStack.add(itemsFuture); // Save current list to the stack
@@ -70,9 +70,17 @@ class SelectParentContentState extends State<SelectParentContent> {
   }
 
   Widget? _buildTrailingWidget(Item item) {
-    if (item.hasChildren != null) {
-      return item.hasChildren!
-        ? const Icon(Icons.chevron_right)
+    if (item.childrenCount != null) {
+      return item.childrenCount! > 0
+        ? SizedBox(
+          width: 100,
+          child: Row(
+            children: [
+              Text(item.childrenCount.toString()),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        )
         : null;
     } else {
       return const Icon(Icons.arrow_drop_up);

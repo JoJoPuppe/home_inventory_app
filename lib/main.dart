@@ -136,7 +136,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
       ? ListView.builder(
           itemCount: _items.length,
           itemBuilder: (context, index) {
-            return ListItem(item: _items[index], apiDomain: apiDomain, context: context);
+            return ListItem(item: _items[index], breadcumbStack: [], apiDomain: apiDomain, context: context);
           },
         )
       : LayoutBuilder(

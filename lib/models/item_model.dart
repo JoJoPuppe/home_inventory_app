@@ -1,4 +1,3 @@
-import '/models/tag_model.dart';
 
 class Item {
   final int itemId;
@@ -8,7 +7,7 @@ class Item {
   final String? imageSMPath;
   final String? imageLGPath;
   final int? labelId;
-  final bool? hasChildren;
+  final int? childrenCount;
   final DateTime? creationDate;
   final DateTime? lastUpdate;
   final List<String>? tags;
@@ -19,7 +18,7 @@ class Item {
               this.comment,
               this.imageSMPath,
               this.imageLGPath,
-              this.hasChildren,
+              this.childrenCount,
               this.creationDate,
               this.lastUpdate,
               this.labelId,
@@ -31,7 +30,7 @@ class Item {
           name = json['name'] as String,
           parentItemId = json['parent_item_id'] as int?,
           comment = json['comment'] as String?,
-          hasChildren = json['has_children'] as bool?,
+          childrenCount = json['children_count'] as int?,
           imageSMPath = json['image_sm_path'] as String?,
           labelId = json['label_id'] as int?,
           imageLGPath = json['image_lg_path'] as String?,

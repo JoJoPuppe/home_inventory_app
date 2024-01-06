@@ -9,7 +9,8 @@ import '/views/items/list_item.dart';
 
 class ViewItem extends StatefulWidget {
   final Item item;
-  const ViewItem({Key? key, required this.item}) : super(key: key);
+  final List<Item> breadcumbStack;
+  const ViewItem({Key? key, required this.item, this.breadcumbStack=const []}) : super(key: key);
 
   @override
   ViewItemState createState() => ViewItemState();
@@ -120,6 +121,10 @@ class ViewItemState extends State<ViewItem> {
                   child: Column(
                     children: [
                       Row(
+                       children: 
+                         widget.breadcumbStack.map((item) => Text("${item.name} > ")).toList(),
+                      ),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                             Column(
@@ -208,7 +213,7 @@ class ViewItemState extends State<ViewItem> {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        return ListItem(item: _items[index], apiDomain: apiDomain, context: context);
+                        return ListItem(item: _items[index], breadcumbStack: widget.breadcumbStack, apiDomain: apiDomain, context: context);
                       },
                       childCount: _items.length
                     ),

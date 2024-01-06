@@ -51,6 +51,9 @@ class CreateItemService {
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
+      for (var item in items) {
+        print(item.childrenCount);
+      }
       return items;
     } else {
       throw Exception('Failed to load items.');

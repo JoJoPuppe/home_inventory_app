@@ -3,11 +3,13 @@ import '/views/items/view_item.dart';
 import '/views/items/edit_item.dart';
 import '/models/item_model.dart';
 
-class ListItem extends StatelessWidget {
+
+class ListItem extends StatefulWidget {
   const ListItem({
     super.key,
     required this.item,
     required this.apiDomain,
+    required this.breadcumbStack,
     required this.context,
     this.chosenModel = 'Tesla Model S',
   });
@@ -15,17 +17,30 @@ class ListItem extends StatelessWidget {
   final Item item;
   final String apiDomain;
   final String chosenModel;
+  final List<Item> breadcumbStack;
   final BuildContext context;
 
+  @override
+
+  ListItemState createState() => ListItemState();
+}
+
+class ListItemState extends State<ListItem> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   String buildImageUrl(String image) {
-    return "$apiDomain/$image";
+    return "${widget.apiDomain}/$image";
   }
 
   void _viewItem() {
+    widget.breadcumbStack.add(widget.item);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ViewItem(item: item),
+        builder: (context) => ViewItem(item: widget.item, breadcumbStack: widget.breadcumbStack),
       ),
     );
   }
@@ -36,12 +51,11 @@ class ListItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => EditItem(item: item),
+            builder: (context) => EditItem(item: widget.item),
           ),
         );
         break;
       case 'Delete':
-        print('Delete');
         break;
     }
   }
@@ -52,11 +66,14 @@ class ListItem extends StatelessWidget {
     Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
       child: Ink(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.transparent ,
-          borderRadius: BorderRadius.all(
+          borderRadius: const BorderRadius.all(
             Radius.circular(25),
           ),
+          border: widget.item.childrenCount != null && widget.item.childrenCount! == 0
+              ? null
+              : Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
         ),
         child: InkWell(
           borderRadius: const BorderRadius.all(
@@ -78,8 +95,8 @@ class ListItem extends StatelessWidget {
                           width: 60,
                           height: 60,
                           child:
-                            item.imageLGPath != null
-                            ? Image.network(buildImageUrl(item.imageLGPath!))
+                            widget.item.imageLGPath != null
+                            ? Image.network(buildImageUrl(widget.item.imageLGPath!))
                             : Container(
                               color: Theme.of(context).colorScheme.surfaceVariant,
                               child: const Icon(Icons.camera_alt),
@@ -88,7 +105,17 @@ class ListItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(item.name),
+                    widget.item.childrenCount != null && widget.item.childrenCount! == 0 
+                    ? Text(widget.item.name,
+                    style: Theme.of(context).textTheme.titleMedium)
+                    : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(widget.item.name,
+                        style: Theme.of(context).textTheme.titleLarge),
+                        Text("Items: ${widget.item.childrenCount.toString()}"),
+                      ]
+                    ),
                   ],
                 ),
                 PopupMenuButton<String>(
