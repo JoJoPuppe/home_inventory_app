@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:home_inventory_app/views/items/view_item.dart';
 import 'views/settings/settings_screen.dart';
 import 'views/items/add_item.dart';
 import 'provider/settings_provider.dart';
@@ -83,6 +84,14 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
        _items = newItems;
     });
   }
+  void _onItemTap(Item item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ViewItem(item: item),
+      )
+    );
+  }
   //ignore: must_call_super
   // Future<List<Item>>? _itemList;
 
@@ -120,7 +129,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
         },
         tooltip: 'Add Item',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 
@@ -136,7 +145,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
       ? ListView.builder(
           itemCount: _items.length,
           itemBuilder: (context, index) {
-            return ListItem(item: _items[index], breadcumbStack: [], apiDomain: apiDomain, context: context);
+            return ListItem(item: _items[index], onTap: _onItemTap, apiDomain: apiDomain, context: context);
           },
         )
       : LayoutBuilder(

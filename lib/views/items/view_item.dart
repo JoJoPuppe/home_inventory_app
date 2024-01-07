@@ -6,43 +6,54 @@ import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '/views/items/list_item.dart';
+import '/views/items/add_item.dart';
 
 class ViewItem extends StatefulWidget {
   final Item item;
-  final List<Item> breadcumbStack;
-  const ViewItem({Key? key, required this.item, this.breadcumbStack=const []}) : super(key: key);
+  const ViewItem({Key? key, required this.item }) : super(key: key);
 
   @override
   ViewItemState createState() => ViewItemState();
 }
 
 class ViewItemState extends State<ViewItem> {
+  List<dynamic> parentStack = [];
+  final List<Item> itemStack = [];
   String? labelId;
-  Item? parentItem;
   Image? _backgroundImage;
+  Item? parentItem;
   String apiDomain = '';
-  List<Item> _items = [];
+  String name = '';
+  late Item currentItem;
+  List<Map<String, dynamic>> history = [];
+  late Future<List<Item>> newItems;
+
 
   @override
   void initState() {
     super.initState();
-    getParentItem();
+    getParentItem(widget.item);
     _fetchInitialData();
+    currentItem = widget.item;
     apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
-
+    name = widget.item.name;
     labelId = widget.item.labelId == null ? "No barcode" : widget.item.labelId.toString();
-      
-    if (widget.item.imageLGPath != null) {
-      _backgroundImage = Image.network(
-           buildImageUrl(widget.item.imageLGPath!),
+    _backgroundImage = getBackgroundImage(widget.item);
+  }
+
+  Image? getBackgroundImage(Item item) {
+    if (item.imageLGPath != null) {
+      return Image.network(
+           buildImageUrl(item.imageLGPath!),
            fit: BoxFit.fitWidth
            );
     }
+    return null;
   }
 
-  void getParentItem() async{
-    if (widget.item.parentItemId != null ) {
-      Item newParentItem = await CreateItemService.getItem(context, widget.item.parentItemId!);
+  void getParentItem(Item item) async{
+    if (item.parentItemId != null ) {
+      Item newParentItem = await CreateItemService.getItem(context, item.parentItemId!);
       setState(() {
         parentItem = newParentItem;
       });
@@ -54,21 +65,54 @@ class ViewItemState extends State<ViewItem> {
     return "$apiDomain/$image";
   }
 
-  Future<List<Item>> getAllChildren() async {
-    List<Item> insideItems = await CreateItemService.getChildren(context, widget.item.itemId);
-    return insideItems;
-  }
-
   Future<void> _fetchInitialData() async {
-    final newItems = await getAllChildren();
-    setState(() {
-       _items = newItems;
-    });
+    newItems = CreateItemService.getChildren(context, widget.item.itemId);
   }
 
   String formatDateTime(DateTime dateTime) {
     DateFormat dateFormat = DateFormat('MM.dd.yy'); // Example format
     return dateFormat.format(dateTime);
+  }
+
+  void _onItemTap(Item item) {
+    parentStack.add(newItems);
+    history.add(
+      {
+        "parent_item": parentItem,
+        "item": currentItem,
+        "label_id": labelId,
+        "background_image": _backgroundImage,
+      }
+    );
+    final newBackgroundImage = getBackgroundImage(item);
+    final newLabelId = item.labelId == null ? "No barcode" : item.labelId.toString();
+    setState(() {
+      _backgroundImage = newBackgroundImage;
+      labelId = newLabelId;
+      itemStack.add(currentItem);
+      parentItem = currentItem;
+      name = item.name;
+      newItems = CreateItemService.getChildren(context, item.itemId);();
+      currentItem = item;
+    });
+  }
+
+  void _handleBack() {
+    if (parentStack.isNotEmpty) {
+      Map<String, dynamic> prevHistory = history.removeLast();
+      currentItem = prevHistory["item"];
+      setState(() {
+        itemStack.removeLast();
+        newItems = parentStack.removeLast();
+        _backgroundImage = prevHistory["background_image"];
+        labelId = prevHistory["label_id"];
+        parentItem = prevHistory["parent_item"];
+      });
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context, '/', (route) => false 
+      );
+    }
   }
 
   @override
@@ -77,6 +121,9 @@ class ViewItemState extends State<ViewItem> {
       body: CustomScrollView(
           slivers: [
             SliverAppBar(
+                leading: IconButton(
+                  onPressed: () => _handleBack(),
+                  icon: const Icon(Icons.arrow_back),),
                 pinned: true,
                 floating: true,
                 actions: [
@@ -109,7 +156,7 @@ class ViewItemState extends State<ViewItem> {
                     ),
                   ),
                 title: Text(
-                  widget.item.name
+                  currentItem.name,
                 ),
               )
             ),
@@ -120,9 +167,17 @@ class ViewItemState extends State<ViewItem> {
                   height: MediaQuery.of(context).size.height * 0.2,
                   child: Column(
                     children: [
-                      Row(
-                       children: 
-                         widget.breadcumbStack.map((item) => Text("${item.name} > ")).toList(),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                         children: 
+                           itemStack.map((item) => Text(
+                           style: const TextStyle(
+                              decoration: TextDecoration.underline,
+                            ),
+                           
+                            "${item.name} > ")).toList(),
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -193,7 +248,7 @@ class ViewItemState extends State<ViewItem> {
               ),
             ),
             FutureBuilder(
-              future: getAllChildren(),
+              future: newItems,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SliverToBoxAdapter(
@@ -213,9 +268,15 @@ class ViewItemState extends State<ViewItem> {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        return ListItem(item: _items[index], breadcumbStack: widget.breadcumbStack, apiDomain: apiDomain, context: context);
+                        List<Item> items = snapshot.data!;
+                        return ListItem(
+                          item: items[index],
+                          onTap: _onItemTap,
+                          apiDomain: apiDomain,
+                          context: context
+                        );
                       },
-                      childCount: _items.length
+                      childCount: snapshot.data!.length
                     ),
                   );
                 } else {
@@ -226,6 +287,20 @@ class ViewItemState extends State<ViewItem> {
               }
             )
           ]
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddItem(parentItem: currentItem),
+              settings: const RouteSettings(name: "/add_item")
+            ),
+          );
+          
+        },
+        tooltip: 'Add Item',
+        child: const Icon(Icons.add),
       ),
     );
   }

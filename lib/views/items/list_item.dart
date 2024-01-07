@@ -1,48 +1,23 @@
 import 'package:flutter/material.dart';
-import '/views/items/view_item.dart';
 import '/views/items/edit_item.dart';
 import '/models/item_model.dart';
 
+class ListItem extends StatelessWidget {
+  final Item item;
+  final String apiDomain;
+  final BuildContext context;
+  final Function(Item) onTap;
 
-class ListItem extends StatefulWidget {
   const ListItem({
     super.key,
     required this.item,
     required this.apiDomain,
-    required this.breadcumbStack,
     required this.context,
-    this.chosenModel = 'Tesla Model S',
+    required this.onTap,
   });
 
-  final Item item;
-  final String apiDomain;
-  final String chosenModel;
-  final List<Item> breadcumbStack;
-  final BuildContext context;
-
-  @override
-
-  ListItemState createState() => ListItemState();
-}
-
-class ListItemState extends State<ListItem> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   String buildImageUrl(String image) {
-    return "${widget.apiDomain}/$image";
-  }
-
-  void _viewItem() {
-    widget.breadcumbStack.add(widget.item);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ViewItem(item: widget.item, breadcumbStack: widget.breadcumbStack),
-      ),
-    );
+    return "$apiDomain/$image";
   }
 
   void _onSelected(String value) {
@@ -51,7 +26,7 @@ class ListItemState extends State<ListItem> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => EditItem(item: widget.item),
+            builder: (context) => EditItem(item: item),
           ),
         );
         break;
@@ -71,7 +46,7 @@ class ListItemState extends State<ListItem> {
           borderRadius: const BorderRadius.all(
             Radius.circular(25),
           ),
-          border: widget.item.childrenCount != null && widget.item.childrenCount! == 0
+          border: item.childrenCount != null && item.childrenCount! == 0
               ? null
               : Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
         ),
@@ -79,7 +54,7 @@ class ListItemState extends State<ListItem> {
           borderRadius: const BorderRadius.all(
             Radius.circular(25),
           ),
-          onTap: _viewItem,
+          onTap: () => onTap(item),
           child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -95,8 +70,8 @@ class ListItemState extends State<ListItem> {
                           width: 60,
                           height: 60,
                           child:
-                            widget.item.imageLGPath != null
-                            ? Image.network(buildImageUrl(widget.item.imageLGPath!))
+                            item.imageLGPath != null
+                            ? Image.network(buildImageUrl(item.imageLGPath!))
                             : Container(
                               color: Theme.of(context).colorScheme.surfaceVariant,
                               child: const Icon(Icons.camera_alt),
@@ -105,15 +80,15 @@ class ListItemState extends State<ListItem> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    widget.item.childrenCount != null && widget.item.childrenCount! == 0 
-                    ? Text(widget.item.name,
+                    item.childrenCount != null && item.childrenCount! == 0 
+                    ? Text(item.name,
                     style: Theme.of(context).textTheme.titleMedium)
                     : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.item.name,
+                        Text(item.name,
                         style: Theme.of(context).textTheme.titleLarge),
-                        Text("Items: ${widget.item.childrenCount.toString()}"),
+                        Text("Items: ${item.childrenCount.toString()}"),
                       ]
                     ),
                   ],

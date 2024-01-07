@@ -7,7 +7,8 @@ import 'dart:typed_data';
 import '/models/item_model.dart';
 
 class AddItem extends StatefulWidget {
-  const AddItem({Key? key}) : super(key: key);
+  final Item? parentItem;
+  const AddItem({Key? key, this.parentItem}) : super(key: key);
   @override
 
   AddItemState createState() => AddItemState();
@@ -17,13 +18,21 @@ class AddItemState extends State<AddItem> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
-  Item? selectedItem;
+  Item? selectedParentItem;
   String? _labelId;
   final _formKey = GlobalKey<FormState>();
   Future<Map<String, bool>>? _sendResopnse;
   Uint8List? _backgroundImage;
   // bool _isLoading = false;
   // String _message = '';
+
+  @override
+  initState() {
+    super.initState();
+    setState(() {
+      selectedParentItem = widget.parentItem;
+    });
+  }
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -35,7 +44,7 @@ class AddItemState extends State<AddItem> {
             'label_id': _labelId, 
             'comment': _commentController.text,
             'image': _backgroundImage,
-            'parent_item_id': selectedItem?.itemId.toString(),
+            'parent_item_id': selectedParentItem?.itemId.toString(),
         });
       //   _isLoading = false;
       //   _message = response.success ? 'Request successful!' : 'Request failed.';
@@ -51,7 +60,7 @@ class AddItemState extends State<AddItem> {
     });
     if (newItem != null) {
       setState(() {
-        selectedItem = newItem;
+        selectedParentItem = newItem;
       });
     }
   }
@@ -176,7 +185,7 @@ class AddItemState extends State<AddItem> {
                     child: OutlinedButton.icon(
                       onPressed: openSelectParentModal,
                       icon: const Icon(Icons.category),
-                      label: selectedItem == null ? const Text('Select Parent') : Text(selectedItem!.name),
+                      label: selectedParentItem == null ? const Text('Select Parent') : Text(selectedParentItem!.name),
                     )
                   ),
                 ],
@@ -230,7 +239,6 @@ class AddItemState extends State<AddItem> {
     _codeController.dispose();
     _nameController.dispose();
     _commentController.dispose();
-    _codeController.dispose();
     super.dispose();
   }
 }
