@@ -24,7 +24,7 @@ class EditItemState extends State<EditItem> {
   final TextEditingController _codeController = TextEditingController();
   Item? parentItem;
   final _formKey = GlobalKey<FormState>();
-  Future<Map<String, bool>>? _sendResopnse;
+  Future<String>? _sendResopnse;
   Image? _backgroundImage;
 
   void _submitForm() async {
@@ -255,12 +255,12 @@ class EditItemState extends State<EditItem> {
     );
   }
 
-  FutureBuilder<Map<String, bool>> buildFutureBuilder() {
-    return FutureBuilder<Map<String, bool>>(
+  FutureBuilder<String> buildFutureBuilder() {
+    return FutureBuilder<String>(
       future: _sendResopnse,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return Text(snapshot.data!.toString());
+          return Text(snapshot.data!);
         } else if (snapshot.hasError) {
           return Text('${snapshot.error}');
         }

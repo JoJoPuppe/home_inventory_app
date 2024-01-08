@@ -94,6 +94,18 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   }
   //ignore: must_call_super
   // Future<List<Item>>? _itemList;
+  void _searchModalOpen() async {
+    final Item? newItem = await showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return const SelectParentContent();
+    });
+    if (newItem != null) {
+      setState(() {
+        selectedParentItem = newItem;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,20 +128,38 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
         ]
       ),
       body: newItemListWidget(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddItem(),
-              settings: const RouteSettings(name: "/add_item")
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            bottom: 80,
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: _searchModalOpen,
+              tooltip: 'Add Item',
+              child: const Icon(Icons.add),
             ),
-          );
-          
-        },
-        tooltip: 'Add Item',
-        child: const Icon(Icons.add),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddItem(),
+                    settings: const RouteSettings(name: "/add_item")
+                  ),
+                );
+                
+              },
+              tooltip: 'Add Item',
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ],
       ),
+
     );
   }
 

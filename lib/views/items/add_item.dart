@@ -21,7 +21,7 @@ class AddItemState extends State<AddItem> {
   Item? selectedParentItem;
   String? _labelId;
   final _formKey = GlobalKey<FormState>();
-  Future<Map<String, bool>>? _sendResopnse;
+  Future<String>? _sendResopnse;
   Uint8List? _backgroundImage;
   // bool _isLoading = false;
   // String _message = '';
@@ -54,9 +54,9 @@ class AddItemState extends State<AddItem> {
 
   void openSelectParentModal() async {
     final Item? newItem = await showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return const SelectParentContent();
+                context: context,
+                builder: (context) {
+                  return const SelectParentContent();
     });
     if (newItem != null) {
       setState(() {
@@ -64,6 +64,7 @@ class AddItemState extends State<AddItem> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -221,14 +222,17 @@ class AddItemState extends State<AddItem> {
       )
     );
   }
-  FutureBuilder<Map<String, bool>> buildFutureBuilder() {
-    return FutureBuilder<Map<String, bool>>(
+  FutureBuilder<String> buildFutureBuilder() {
+    return FutureBuilder<String>(
       future: _sendResopnse,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return Text(snapshot.data!.toString());
+          Navigator.pop(context, snapshot.data);
         } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
+          ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text('${snapshot.error}')));
+          // return Text('${snapshot.error}');
         }
         return const CircularProgressIndicator();
       },

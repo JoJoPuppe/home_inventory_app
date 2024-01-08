@@ -107,11 +107,30 @@ class ViewItemState extends State<ViewItem> {
         _backgroundImage = prevHistory["background_image"];
         labelId = prevHistory["label_id"];
         parentItem = prevHistory["parent_item"];
+        newItems = CreateItemService.getChildren(context, currentItem.itemId);();
       });
     } else {
       Navigator.pushNamedAndRemoveUntil(
         context, '/', (route) => false 
       );
+    }
+  }
+
+  Future<void> _addNewItem(BuildContext context) async {
+    final addItemResult = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddItem(parentItem: currentItem)
+      ),
+    );
+    if (!mounted) return;
+    if (addItemResult != null) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text('Added item: $addItemResult')));
+        setState(() {
+          newItems = CreateItemService.getChildren(context, currentItem.itemId);();
+        });
     }
   }
 
@@ -290,14 +309,7 @@ class ViewItemState extends State<ViewItem> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddItem(parentItem: currentItem),
-              settings: const RouteSettings(name: "/add_item")
-            ),
-          );
-          
+          _addNewItem(context);
         },
         tooltip: 'Add Item',
         child: const Icon(Icons.add),

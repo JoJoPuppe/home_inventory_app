@@ -4,9 +4,10 @@ import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '/models/item_model.dart';
+import '/models/search_result.dart';
 
 class CreateItemService {
-  static Future<Map<String, bool>> addItem(BuildContext context, Map<String, dynamic> data) async {
+  static Future<String> addItem(BuildContext context, Map<String, dynamic> data) async {
     // Pick an image
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
     final url = Uri.parse('$apiDomain/items/');
@@ -32,12 +33,10 @@ class CreateItemService {
       }
     }
 
-    // Send the request
-
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      return {'success': true};
+      return data['name'];
     } else {
       throw Exception('Failed to create item.');
     }
@@ -51,9 +50,6 @@ class CreateItemService {
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
-      for (var item in items) {
-        print(item.childrenCount);
-      }
       return items;
     } else {
       throw Exception('Failed to load items.');
@@ -84,5 +80,23 @@ class CreateItemService {
     } else {
       throw Exception('Failed to load item.');
     }
+  }
+  static Future<List<SearchResult>> searchItems(BuildContext context, String? query) async {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+
+    final url = Uri.parse('$apiDomain/search/?query=$query');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final List<SearchResult> items = data.map((item) => SearchResult.fromJson(item)).toList();
+      for (var item in items) {
+        print(item.name);
+        print(item.rank);
+      }
+      return items;
+    } else {
+      throw Exception('Failed to load items.');
+    }
+
   }
 }
