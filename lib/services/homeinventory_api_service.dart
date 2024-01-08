@@ -81,18 +81,14 @@ class CreateItemService {
       throw Exception('Failed to load item.');
     }
   }
-  static Future<List<SearchResult>> searchItems(BuildContext context, String? query) async {
+  static Future<List<Item>> searchItems(BuildContext context, String? query) async {
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
 
     final url = Uri.parse('$apiDomain/search/?query=$query');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      final List<SearchResult> items = data.map((item) => SearchResult.fromJson(item)).toList();
-      for (var item in items) {
-        print(item.name);
-        print(item.rank);
-      }
+      final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
     } else {
       throw Exception('Failed to load items.');

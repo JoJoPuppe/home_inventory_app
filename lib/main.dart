@@ -8,6 +8,7 @@ import '/models/item_model.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/provider/camera_manager.dart';
 import '/views/items/list_item.dart';
+import 'views/items/search_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,7 @@ class HomeInventoryApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/',
-      home: const InventoryHomePage(title: 'Home Inventory Overview'),
+      home: const InventoryHomePage(title: 'Home Inventory'),
     );
   }
 }
@@ -57,7 +58,6 @@ class InventoryHomePage extends StatefulWidget {
 
 class _InventoryHomePageState extends State<InventoryHomePage> {
   List<Item> _items = [];
-
   String apiDomain = '';
 
 
@@ -94,18 +94,6 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   }
   //ignore: must_call_super
   // Future<List<Item>>? _itemList;
-  void _searchModalOpen() async {
-    final Item? newItem = await showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return const SelectParentContent();
-    });
-    if (newItem != null) {
-      setState(() {
-        selectedParentItem = newItem;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +122,14 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
             bottom: 80,
             right: 0,
             child: FloatingActionButton(
-              onPressed: _searchModalOpen,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SearchView(),
+                  ),
+                );
+              },
               tooltip: 'Add Item',
               child: const Icon(Icons.add),
             ),
