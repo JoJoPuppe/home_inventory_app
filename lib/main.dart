@@ -9,6 +9,7 @@ import '/services/homeinventory_api_service.dart'; // Import the file where you 
 import '/provider/camera_manager.dart';
 import '/views/items/list_item.dart';
 import 'views/items/search_view.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,6 @@ class HomeInventoryApp extends StatelessWidget {
 
 class InventoryHomePage extends StatefulWidget {
   const InventoryHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -57,6 +57,8 @@ class InventoryHomePage extends StatefulWidget {
 }
 
 class _InventoryHomePageState extends State<InventoryHomePage> {
+  final PersistentTabController _controller =
+        PersistentTabController(initialIndex: 0);
   List<Item> _items = [];
   String apiDomain = '';
 
@@ -85,11 +87,11 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
     });
   }
   void _onItemTap(Item item) {
-    Navigator.push(
+    PersistentNavBarNavigator.pushNewScreen(
       context,
-      MaterialPageRoute(
-        builder: (context) => ViewItem(item: item),
-      )
+      screen: ViewItem(item: item),
+      withNavBar: true,
+      pageTransitionAnimation: PageTransitionAnimation.fade,
     );
   }
   //ignore: must_call_super
@@ -115,47 +117,42 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
           )
         ]
       ),
-      body: newItemListWidget(),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            bottom: 80,
-            right: 0,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SearchView(),
-                  ),
-                );
-              },
-              tooltip: 'Add Item',
-              child: const Icon(Icons.add),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddItem(),
-                    settings: const RouteSettings(name: "/add_item")
-                  ),
-                );
-                
-              },
-              tooltip: 'Add Item',
-              child: const Icon(Icons.add),
-            ),
-          ),
+      body: PersistentTabView(
+        context,
+        hideNavigationBar: false,
+        controller: _controller,
+        screens: [
+          newItemListWidget(),
+          const AddItem(),
+          const SearchView(),
         ],
-      ),
+        items: _navBarItems(),
+        navBarStyle: NavBarStyle.style3,
+        )
 
     );
+  }
+  List<PersistentBottomNavBarItem> _navBarItems() {
+    return [
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.home),
+        title: ("Home"),
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.add),
+        title: ("Add"),
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(Icons.search),
+        title: ("Search"),
+        activeColorPrimary: Colors.blue,
+        inactiveColorPrimary: Colors.grey,
+      ),
+    ];
   }
 
   Widget newItemListWidget() {
