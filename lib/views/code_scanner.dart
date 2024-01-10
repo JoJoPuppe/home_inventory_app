@@ -31,7 +31,6 @@ class ScannerState extends State<ScannerWidget> {
 
   _onScanSuccess(Code? code) {
     setState(() {
-      successScans++;
       if (code?.text?.isNotEmpty == true) {
         Navigator.pop(context, code?.text);
       }

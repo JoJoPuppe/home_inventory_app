@@ -6,6 +6,7 @@ import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '/views/items/list_item.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '/views/items/add_item.dart';
 
 class ViewItem extends StatefulWidget {
@@ -32,6 +33,7 @@ class ViewItemState extends State<ViewItem> {
   @override
   void initState() {
     super.initState();
+    BackButtonInterceptor.add(myInterceptor);
     getParentItem(widget.item);
     _fetchInitialData();
     currentItem = widget.item;
@@ -39,6 +41,23 @@ class ViewItemState extends State<ViewItem> {
     name = widget.item.name;
     labelId = widget.item.labelId == null ? "No barcode" : widget.item.labelId.toString();
     _backgroundImage = getBackgroundImage(widget.item);
+  }
+  bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    if (parentStack.isNotEmpty) {
+      Map<String, dynamic> prevHistory = history.removeLast();
+      currentItem = prevHistory["item"];
+      setState(() {
+        itemStack.removeLast();
+        newItems = parentStack.removeLast();
+        _backgroundImage = prevHistory["background_image"];
+        labelId = prevHistory["label_id"];
+        parentItem = prevHistory["parent_item"];
+        newItems = CreateItemService.getChildren(context, currentItem.itemId);();
+      });
+      return true;
+    } else {
+      return false;
+    }
   }
 
   Image? getBackgroundImage(Item item) {
@@ -132,6 +151,12 @@ class ViewItemState extends State<ViewItem> {
           newItems = CreateItemService.getChildren(context, currentItem.itemId);();
         });
     }
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(myInterceptor);
+    super.dispose();
   }
 
   @override

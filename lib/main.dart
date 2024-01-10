@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '/provider/camera_manager.dart';
 import '/views/home/home.dart';
 import 'views/items/search_view.dart';
+import '/views/code_scanner.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 void main() async {
@@ -64,11 +65,11 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
         context,
         backgroundColor: Colors.transparent,
         controller: _controller,
-        popAllScreensOnTapAnyTabs: true,
-        screens: [
-          HomeView(tabContext: _tabContext),
-          const AddItem(),
-          const SearchView(),
+        // popAllScreensOnTapAnyTabs: true,
+        screens: const [
+          HomeView(),
+          ScannerWidget(),
+          SearchView(),
         ],
         items: _navBarItems(),
         decoration: NavBarDecoration(
@@ -86,7 +87,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
         inactiveColorPrimary: Colors.grey,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.qr_code, color: Colors.white),
         activeColorPrimary: Colors.blue,
         inactiveColorPrimary: Colors.grey,
       ),

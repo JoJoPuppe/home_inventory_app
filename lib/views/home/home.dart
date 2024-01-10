@@ -10,8 +10,7 @@ import '/views/settings/settings_screen.dart';
 
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key, required this.tabContext});
-  final BuildContext? tabContext;
+  const HomeView({super.key});
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -44,14 +43,22 @@ class _HomeViewState extends State<HomeView> {
        _items = newItems;
     });
   }
-  void _onItemTap(Item item) {
-    PersistentNavBarNavigator.pushNewScreen(
-      widget.tabContext ?? context,
-      screen: ViewItem(item: item),
-      withNavBar: true,
-      pageTransitionAnimation: PageTransitionAnimation.fade,
+  void _onItemTap2(Item item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ViewItem(item: item),
+      )
     );
   }
+  // void _onItemTap(Item item) {
+  //   PersistentNavBarNavigator.pushNewScreen(
+  //     widget.tabContext ?? context,
+  //     screen: ViewItem(item: item),
+  //     withNavBar: true,
+  //     pageTransitionAnimation: PageTransitionAnimation.fade,
+  //   );
+  // }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +94,7 @@ class _HomeViewState extends State<HomeView> {
       ? ListView.builder(
           itemCount: _items.length,
           itemBuilder: (context, index) {
-            return ListItem(item: _items[index], onTap: _onItemTap, apiDomain: apiDomain, context: context);
+            return ListItem(item: _items[index], onTap: _onItemTap2, apiDomain: apiDomain, context: context);
           },
         )
       : LayoutBuilder(
