@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'views/items/add_item.dart';
 import 'provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import '/provider/camera_manager.dart';
@@ -56,12 +55,10 @@ class InventoryHomePage extends StatefulWidget {
 class _InventoryHomePageState extends State<InventoryHomePage> {
   final PersistentTabController _controller =
         PersistentTabController(initialIndex: 0);
-  BuildContext? _tabContext;
 
   @override
   Widget build(BuildContext context) {
     return PersistentTabView(
-        selectedTabScreenContext: (BuildContext? tabContext) => _tabContext = tabContext,
         context,
         backgroundColor: Colors.transparent,
         controller: _controller,

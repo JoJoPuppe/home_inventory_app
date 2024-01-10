@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/views/code_scanner.dart';

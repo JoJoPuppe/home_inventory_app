@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import '/views/items/list_item.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '/views/items/add_item.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 
 class ViewItem extends StatefulWidget {
   final Item item;
@@ -28,7 +29,7 @@ class ViewItemState extends State<ViewItem> {
   late Item currentItem;
   List<Map<String, dynamic>> history = [];
   late Future<List<Item>> newItems;
-
+  bool addItem = false;
 
   @override
   void initState() {
@@ -43,7 +44,7 @@ class ViewItemState extends State<ViewItem> {
     _backgroundImage = getBackgroundImage(widget.item);
   }
   bool myInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
-    if (parentStack.isNotEmpty) {
+    if (parentStack.isNotEmpty && !addItem) {
       Map<String, dynamic> prevHistory = history.removeLast();
       currentItem = prevHistory["item"];
       setState(() {
@@ -136,12 +137,20 @@ class ViewItemState extends State<ViewItem> {
   }
 
   Future<void> _addNewItem(BuildContext context) async {
-    final addItemResult = await Navigator.push(
+    addItem = true;
+    // final addItemResult = await Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => AddItem(parentItem: currentItem)
+    //   ),
+    // );
+    final addItemResult = await PersistentNavBarNavigator.pushNewScreen(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddItem(parentItem: currentItem)
-      ),
+      screen: AddItem(parentItem: currentItem),
+      withNavBar: false,
+      pageTransitionAnimation: PageTransitionAnimation.fade,
     );
+    addItem = false;
     if (!mounted) return;
     if (addItemResult != null) {
       ScaffoldMessenger.of(context)

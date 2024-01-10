@@ -65,137 +65,144 @@ class AddItemState extends State<AddItem> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Item'),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.cancel),
+          )
+        ]
       ),
       body:
       Form(
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Center(
-                child: SizedBox(
-                  height: 120,
-                  width: 120,
-                  child: 
-                  IconButton(
-                    iconSize: 80,
-                    icon: _backgroundImage != null
-                      ? Image.memory(_backgroundImage!)
-                      : const Column(
-                        children: [
-                          Icon(Icons.camera_alt),
-                          Text('Take a Picture'),
-                        ],
-                      ),
-                    onPressed: () async {
-                      final Uint8List? squareImage = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TakePictureScreen(),
-                        )
-                      );
-                      if (squareImage != null) {
-                        setState(() {
-                          _backgroundImage = squareImage;
-                        });
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Center(
+                  child: SizedBox(
+                    height: 120,
+                    width: 120,
+                    child: 
+                    IconButton(
+                      iconSize: 80,
+                      icon: _backgroundImage != null
+                        ? Image.memory(_backgroundImage!)
+                        : const Column(
+                          children: [
+                            Icon(Icons.camera_alt),
+                            Text('Take a Picture'),
+                          ],
+                        ),
+                      onPressed: () async {
+                        final Uint8List? squareImage = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const TakePictureScreen(),
+                          )
+                        );
+                        if (squareImage != null) {
+                          setState(() {
+                            _backgroundImage = squareImage;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                       floatingLabelBehavior: FloatingLabelBehavior.never,
+                       hintText: 'Enter the name of the item',
+                       contentPadding: EdgeInsets.all(15),
+                       border: InputBorder.none
+                     ),
+                    controller: _nameController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some text';
                       }
+                      return null;
                     },
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(Radius.circular(20)),
+                    border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    width: 1),
+            
+                    // color: Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                       floatingLabelBehavior: FloatingLabelBehavior.never,
+                       hintText: 'Write a comment',
+                       contentPadding: EdgeInsets.all(15),
+                       border: InputBorder.none
+                     ),
+                    controller: _commentController,
                   ),
                 ),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                     floatingLabelBehavior: FloatingLabelBehavior.never,
-                     hintText: 'Enter the name of the item',
-                     contentPadding: EdgeInsets.all(15),
-                     border: InputBorder.none
-                   ),
-                  controller: _nameController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
-                    }
-                    return null;
-                  },
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final code = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ScannerWidget(),
+                            )
+                          );
+                          setState(() {
+                            _labelId = code;
+                          });
+                        },
+                        icon: const Icon(Icons.qr_code),
+                        label: _labelId == null ? const Text('Scan Barcode') : Text(_labelId!),
+                      )
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(20)),
-                  border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: 1),
-
-                  // color: Theme.of(context).colorScheme.secondaryContainer,
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: openSelectParentModal,
+                        icon: const Icon(Icons.category),
+                        label: selectedParentItem == null ? const Text('Select Parent') : Text("Parent: ${selectedParentItem!.name}"),
+                      )
+                    ),
+                  ],
                 ),
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                     floatingLabelBehavior: FloatingLabelBehavior.never,
-                     hintText: 'Write a comment',
-                     contentPadding: EdgeInsets.all(15),
-                     border: InputBorder.none
-                   ),
-                  controller: _commentController,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final code = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ScannerWidget(),
-                          )
-                        );
-                        setState(() {
-                          _labelId = code;
-                        });
-                      },
-                      icon: const Icon(Icons.qr_code),
-                      label: _labelId == null ? const Text('Scan Barcode') : Text(_labelId!),
-                    )
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: openSelectParentModal,
-                      icon: const Icon(Icons.category),
-                      label: selectedParentItem == null ? const Text('Select Parent') : Text(selectedParentItem!.name),
-                    )
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
                     child: Row(
                       children: [
                         Expanded(
@@ -210,13 +217,12 @@ class AddItemState extends State<AddItem> {
                     ),
                   ),
                 ),
-              ),
-              // if (_message.isNotEmpty)
-              //   Text(_message),
-             if (_sendResopnse != null)
-               buildFutureBuilder(),
-          
-            ],
+                // if (_message.isNotEmpty)
+                //   Text(_message),
+               if (_sendResopnse != null)
+                 buildFutureBuilder(),
+              ],
+            ),
           ),
         ),
       )
