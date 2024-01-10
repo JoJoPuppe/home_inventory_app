@@ -80,6 +80,15 @@ class ViewItemState extends State<ViewItem> {
     }
   }
 
+  void _onTapBreadCrumb(Item item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ViewItem(item: item),
+      )
+    );
+  }
+
   String buildImageUrl(String image) {
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
     return "$apiDomain/$image";
@@ -161,6 +170,14 @@ class ViewItemState extends State<ViewItem> {
         });
     }
   }
+  void _onSelected(String value) {
+    switch (value) {
+      case 'Edit':
+        break;
+      case 'Delete':
+        break;
+    }
+  }
 
   @override
   void dispose() {
@@ -177,29 +194,34 @@ class ViewItemState extends State<ViewItem> {
                 leading: IconButton(
                   onPressed: () => _handleBack(),
                   icon: const Icon(Icons.arrow_back),),
-                pinned: true,
-                floating: true,
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () {
-                      Navigator.pushNamedAndRemoveUntil(
-                        context, '/', (route) => false 
-                      );
-                    }
+                  PopupMenuButton<String>(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    onSelected: _onSelected,
+                    itemBuilder: (BuildContext context) {
+                      return {'Edit', 'Details', 'Delete'}.map((String choice) {
+                        return PopupMenuItem<String>(
+                          value: choice,
+                          child: Text(choice),
+                        );
+                      }).toList();
+                    },
+                    icon: const Icon(Icons.more_vert),
                   )
                 ],
+                pinned: true,
+                floating: true,
                 backgroundColor: Theme.of(context).colorScheme.background,
                 expandedHeight: (MediaQuery.of(context).size.width - kToolbarHeight) * 0.8,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 10.0),
+                  titlePadding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                   background: Padding(
                     padding: EdgeInsets.fromLTRB(
                       MediaQuery.of(context).size.width * 0.25,
                       MediaQuery.of(context).size.height * 0.05,
                       MediaQuery.of(context).size.width * 0.25,
-                      MediaQuery.of(context).size.height * 0.05
+                      MediaQuery.of(context).size.height * 0.08
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(48.0),
@@ -215,77 +237,56 @@ class ViewItemState extends State<ViewItem> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 0.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.2,
                   child: Column(
                     children: [
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                         children: 
-                           itemStack.map((item) => Text(
-                           style: const TextStyle(
-                              decoration: TextDecoration.underline,
-                            ),
-                           
-                            "${item.name} > ")).toList(),
+                      currentItem.parentItemId != null
+                      ? Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: 8.0,
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                            Column(
-
-                              children: [
-                                const Icon(Icons.qr_code),
-                                const SizedBox(width: 8),
-                                Text(labelId ?? "No barcode")
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: Row(
+                             children: [ 
+                               IconButton(
+                                 icon: const Icon(Icons.home),
+                                 onPressed: () {
+                                   Navigator.of(context).pop();
+                                 }
+                               ),
+                               ...itemStack.map((item) => 
+                                 Row(
+                                   children: [
+                                     Icon(
+                                           color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                     Icons.chevron_right),
+                                     GestureDetector(
+                                       onTap: () => _onTapBreadCrumb(item),
+                                       child: Padding(
+                                         padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+                                         child: Text(
+                                           style: TextStyle(
+                                               color: Theme.of(context).colorScheme.tertiary,
+                                               fontSize: 20.0,
+                                            ),
+                                            item.name
+                                          ),
+                                       ),
+                                     ),
+                                     ],
+                                )
+                                ).toList(),
                               ],
-                          ),
-                          Column(
-                            children: [
-                                const Icon(Icons.category),
-                                const SizedBox(width: 8),
-                                Text(
-                                overflow: TextOverflow.ellipsis,
-                                parentItem?.name ?? "No parent")
-                            ]
-                          ),
-                          TextButton(
-                          child: const Text("Details"),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditItem(
-                                      item: widget.item,
-                                    )
-                                  )
-                                );
-                              }
                             ),
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                            child: IconButton(
-                              color: Theme.of(context).colorScheme.primary,
-                              icon: const Icon(
-                              Icons.edit),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditItem(
-                                      item: widget.item,
-                                    )
-                                  )
-                                );
-                              }
-                            ),
-                          )
-                        ]
-                      ),
+                          ),
+                        ),
+                      )
+                      : const SizedBox(),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),

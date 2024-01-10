@@ -32,8 +32,6 @@ class HomeInventoryApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue[900]!,
           brightness: Brightness.dark,
-
-
           // background: Colors.blueGrey[900]!,
         ),
         useMaterial3: true,
