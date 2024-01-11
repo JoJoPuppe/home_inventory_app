@@ -27,6 +27,7 @@ class HomeInventoryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Home Inventory',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

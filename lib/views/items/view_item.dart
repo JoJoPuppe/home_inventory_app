@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/models/item_model.dart';
@@ -30,6 +31,7 @@ class ViewItemState extends State<ViewItem> {
   List<Map<String, dynamic>> history = [];
   late Future<List<Item>> newItems;
   bool addItem = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -65,7 +67,7 @@ class ViewItemState extends State<ViewItem> {
     if (item.imageLGPath != null) {
       return Image.network(
            buildImageUrl(item.imageLGPath!),
-           fit: BoxFit.fitWidth
+           fit: BoxFit.cover
            );
     }
     return null;
@@ -80,13 +82,11 @@ class ViewItemState extends State<ViewItem> {
     }
   }
 
-  void _onTapBreadCrumb(Item item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ViewItem(item: item),
-      )
-    );
+  void _onTapBreadCrumb(int index) {
+    final backCount = itemStack.length - index;
+    for (int i = 0; i < backCount; i++) {
+      _handleBack();
+    }
   }
 
   String buildImageUrl(String image) {
@@ -104,6 +104,7 @@ class ViewItemState extends State<ViewItem> {
   }
 
   void _onItemTap(Item item) {
+    
     parentStack.add(newItems);
     history.add(
       {
@@ -124,6 +125,11 @@ class ViewItemState extends State<ViewItem> {
       newItems = CreateItemService.getChildren(context, item.itemId);();
       currentItem = item;
     });
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut
+    );
   }
 
   void _handleBack() {
@@ -215,19 +221,29 @@ class ViewItemState extends State<ViewItem> {
                 expandedHeight: (MediaQuery.of(context).size.width - kToolbarHeight) * 0.8,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  titlePadding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                  background: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      MediaQuery.of(context).size.width * 0.25,
-                      MediaQuery.of(context).size.height * 0.05,
-                      MediaQuery.of(context).size.width * 0.25,
-                      MediaQuery.of(context).size.height * 0.08
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(48.0),
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: _backgroundImage ?? const Icon(Icons.camera_alt)),
+                  titlePadding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 8.0),
+                  background: FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: Stack(
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        _backgroundImage ?? const Center(child: SizedBox(width: 100.0, height: 100.0, child: Icon(Icons.inventory_2_outlined))),
+                        Positioned.fill(
+                          child: Container(
+                           decoration: BoxDecoration(
+                             gradient: LinearGradient(
+                               begin: Alignment.topCenter,
+                               end: Alignment.bottomCenter,
+                               stops: const [0.5, 1.0],
+                               colors: [
+                                 Colors.transparent,
+                                 Theme.of(context).colorScheme.background,
+                               ]
+                             )
+                           )
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 title: Text(
@@ -242,51 +258,53 @@ class ViewItemState extends State<ViewItem> {
                   height: MediaQuery.of(context).size.height * 0.2,
                   child: Column(
                     children: [
-                      currentItem.parentItemId != null
+                      parentStack.isNotEmpty
                       ? Padding(
                         padding: const EdgeInsets.only(
                           bottom: 8.0,
                         ),
                         child: SingleChildScrollView(
+                          controller: _scrollController,
                           scrollDirection: Axis.horizontal,
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: Row(
-                             children: [ 
-                               IconButton(
-                                 icon: const Icon(Icons.home),
-                                 onPressed: () {
-                                   Navigator.of(context).pop();
-                                 }
-                               ),
-                               ...itemStack.map((item) => 
-                                 Row(
-                                   children: [
-                                     Icon(
-                                           color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                     Icons.chevron_right),
-                                     GestureDetector(
-                                       onTap: () => _onTapBreadCrumb(item),
-                                       child: Padding(
-                                         padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
-                                         child: Text(
-                                           style: TextStyle(
-                                               color: Theme.of(context).colorScheme.tertiary,
-                                               fontSize: 20.0,
-                                            ),
-                                            item.name
+                          child: Row(
+                           children: [ 
+                             IconButton(
+                               icon: const Icon(Icons.home_outlined),
+                               onPressed: () {
+                                 Navigator.of(context).pop();
+                               }
+                             ),
+                             ...itemStack.asMap().entries.map((item) => 
+                               Row(
+                                 children: [
+                                   Icon(
+                                         color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                   Icons.chevron_right),
+                                   GestureDetector(
+                                     onTap: () => _onTapBreadCrumb(item.key),
+                                     child: Padding(
+                                       padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 0.0),
+                                       child: Text(
+                                         style: TextStyle(
+                                             color: Theme.of(context).colorScheme.tertiary,
+                                             fontSize: 20.0,
                                           ),
-                                       ),
+                                          item.value.name
+                                        ),
                                      ),
-                                     ],
-                                )
-                                ).toList(),
-                              ],
-                            ),
+                                   ),
+                                   ],
+                              )
+                              ).toList(),
+                            ],
                           ),
                         ),
                       )
-                      : const SizedBox(),
+                      : const Center(
+                        child: Text(
+                          
+                        )
+                      ),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),

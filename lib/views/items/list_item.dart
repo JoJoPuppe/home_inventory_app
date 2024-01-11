@@ -34,83 +34,106 @@ class ListItem extends StatelessWidget {
         break;
     }
   }
-
+// item.childrenCount != null && item.childrenCount! == 0
   @override
   Widget build(BuildContext context) {
     return 
-    Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 8.0),
-      child: Ink(
-        decoration: BoxDecoration(
-          color: Colors.transparent ,
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          border: item.childrenCount != null && item.childrenCount! == 0
-              ? null
-              : Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
-        ),
-        child: InkWell(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          onTap: () => onTap(item),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(20),
-                        ),
-                        child: SizedBox(
-                          width: 60,
-                          height: 60,
-                          child:
-                            item.imageLGPath != null
-                            ? Image.network(buildImageUrl(item.imageLGPath!))
-                            : Container(
-                              color: Theme.of(context).colorScheme.surfaceVariant,
-                              child: const Icon(Icons.camera_alt),
-                            ),
-                          ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    item.childrenCount != null && item.childrenCount! == 0 
-                    ? Text(item.name,
-                    style: Theme.of(context).textTheme.titleMedium)
-                    : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item.name,
-                        style: Theme.of(context).textTheme.titleLarge),
-                        Text("Items: ${item.childrenCount.toString()}"),
-                      ]
-                    ),
-                  ],
-                ),
-                PopupMenuButton<String>(
-                  color: Theme.of(context).colorScheme.surfaceVariant,
-                  onSelected: _onSelected,
-                  itemBuilder: (BuildContext context) {
-                    return {'Edit', 'Delete'}.map((String choice) {
-                      return PopupMenuItem<String>(
-                        value: choice,
-                        child: Text(choice),
-                      );
-                    }).toList();
-                  },
-                  icon: const Icon(Icons.more_vert),
-                )
-            ]
+    Ink(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+            width: 1,
           ),
         )
+      ),
+      child: InkWell(
+        onTap: () => onTap(item),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(20),
+                      ),
+                      child: SizedBox(
+                        width: 60,
+                        height: 60,
+                        child:
+                          item.imageLGPath != null
+                          ? Image.network(
+                            buildImageUrl(item.imageLGPath!),
+                            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded) {
+                                return child;
+                              } else {
+                                return AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 500),
+                                  child: frame == null
+                                    ? const Icon(Icons.camera_alt)
+                                    : child,
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  }
+                                );
+                              }
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) {
+                                return child;
+                              } else  {
+                                return const Center(
+                                child: CircularProgressIndicator()
+                                );
+                              }
+                            }
+                            )
+                          : Container(
+                            color: Theme.of(context).colorScheme.surfaceVariant,
+                            child: const Icon(Icons.camera_alt),
+                          ),
+                        ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  item.childrenCount != null && item.childrenCount! == 0 
+                  ? Text(item.name,
+                  style: Theme.of(context).textTheme.titleMedium)
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(item.name,
+                      style: Theme.of(context).textTheme.titleLarge),
+                      Text("Items: ${item.childrenCount.toString()}"),
+                    ]
+                  ),
+                ],
+              ),
+              PopupMenuButton<String>(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                onSelected: _onSelected,
+                itemBuilder: (BuildContext context) {
+                  return {'Edit', 'Delete'}.map((String choice) {
+                    return PopupMenuItem<String>(
+                      value: choice,
+                      child: Text(choice),
+                    );
+                  }).toList();
+                },
+                icon: const Icon(Icons.more_vert),
+              )
+          ]
         ),
-    );
+      )
+      );
       // onTap: () {
       //   Navigator.push(
       //     context,
