@@ -69,59 +69,69 @@ class AddItemState extends State<AddItem> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         title: const Text('Add Item'),
         actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.close),
+          Padding(
+            padding: const EdgeInsets.only(
+             right: 16.0
+            ),
+            child: FilledButton(
+              onPressed: _submitForm,
+              child: const Row(
+                children: [
+                  Icon(Icons.check),
+                  SizedBox(width: 5),
+                  Text('Save'),
+                ],
+              ),
+            ),
           )
         ]
       ),
       body:
       Form(
         key: _formKey,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: SizedBox(
-                    width: double.infinity,
+        child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
-                        Center(
-                          child: SizedBox(
-                            height: 110,
-                            width: 110,
-                            child: 
-                            IconButton(
-                              iconSize: 60,
-                              icon: _backgroundImage != null
-                                ? Image.memory(_backgroundImage!)
-                                : const Column(
-                                  children: [
-                                    Icon(Icons.camera_alt),
-                                    Text('Take a Picture'),
-                                  ],
-                                ),
-                              onPressed: () async {
-                                final Uint8List? squareImage = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const TakePictureScreen(),
-                                  )
-                                );
-                                if (squareImage != null) {
-                                  setState(() {
-                                    _backgroundImage = squareImage;
-                                  });
-                                }
-                              },
+                        Expanded(
+                          child: Center(
+                            child: SizedBox(
+                              height: 110,
+                              width: 210,
+                              child: 
+                              IconButton(
+                                iconSize: 60,
+                                icon: _backgroundImage != null
+                                  ? Image.memory(_backgroundImage!)
+                                  : const Column(
+                                    children: [
+                                      Icon(Icons.camera_alt),
+                                      Text('Take a Picture'),
+                                    ],
+                                  ),
+                                onPressed: () async {
+                                  final Uint8List? squareImage = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const TakePictureScreen(),
+                                    )
+                                  );
+                                  if (squareImage != null) {
+                                    setState(() {
+                                      _backgroundImage = squareImage;
+                                    });
+                                  }
+                                },
+                              ),
                             ),
                           ),
                         ),
@@ -158,7 +168,6 @@ class AddItemState extends State<AddItem> {
                             border: Border.all(
                             color: Theme.of(context).colorScheme.outline,
                             width: 1),
-                    
                             // color: Theme.of(context).colorScheme.secondaryContainer,
                           ),
                           child: TextFormField(
@@ -210,25 +219,8 @@ class AddItemState extends State<AddItem> {
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(Theme.of(context).colorScheme.primaryContainer)),
-                        onPressed: _submitForm,
-                        child: const Text('Submit'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-               if (_sendResopnse != null)
-                 buildFutureBuilder(),
-            ],
-          ),
+            );
+          }
         ),
       )
     );

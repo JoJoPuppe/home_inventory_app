@@ -39,14 +39,8 @@ class ListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return 
     Ink(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.transparent,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-            width: 1,
-          ),
-        )
       ),
       child: InkWell(
         onTap: () => onTap(item),
@@ -56,7 +50,7 @@ class ListItem extends StatelessWidget {
               Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.fromLTRB(12.0, 20.0, 12.0, 20.0),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.all(
                         Radius.circular(20),

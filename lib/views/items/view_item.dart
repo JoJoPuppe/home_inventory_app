@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '/services/homeinventory_api_service.dart'; // Import the file where you define the API call
 import '/models/item_model.dart';
@@ -247,6 +246,9 @@ class ViewItemState extends State<ViewItem> {
                     ),
                   ),
                 title: Text(
+                  style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  ),
                   currentItem.name,
                 ),
               )
@@ -255,7 +257,7 @@ class ViewItemState extends State<ViewItem> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
                 child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.2,
+                  height: 60,
                   child: Column(
                     children: [
                       parentStack.isNotEmpty
@@ -300,21 +302,32 @@ class ViewItemState extends State<ViewItem> {
                           ),
                         ),
                       )
-                      : const Center(
-                        child: Text(
-                          
-                        )
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Center(
-                            child: Text(
-                            widget.item.comment ?? "No comment"),
-                          ),
+                      : Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Center(
+                          child: Text(
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            'No parent items',
+                          )
                         ),
                       ),
                     ]
+                  ),
+                ),
+              ),
+            ),
+            if (currentItem.comment != null)
+            SliverToBoxAdapter(
+              child:
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                    child: Text(
+                    currentItem.comment!),
                   ),
                 ),
               ),

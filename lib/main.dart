@@ -58,6 +58,7 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   @override
   Widget build(BuildContext context) {
     return PersistentTabView(
+        navBarHeight: 70,
         context,
         backgroundColor: Colors.transparent,
         controller: _controller,
@@ -71,27 +72,25 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
         decoration: NavBarDecoration(
           borderRadius: BorderRadius.circular(10.0),
         ),
-        navBarStyle: NavBarStyle.style15,
+        navBarStyle: NavBarStyle.style2,
     );
   }
   List<PersistentBottomNavBarItem> _navBarItems() {
     return [
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.home),
-        title: ("Home"),
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
+        activeColorPrimary: Theme.of(context).colorScheme.primary,
+        inactiveColorPrimary: Theme.of(context).colorScheme.surfaceVariant,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(Icons.qr_code, color: Colors.white),
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
+        icon: const Icon(Icons.qr_code),
+        activeColorPrimary: Theme.of(context).colorScheme.primary,
+        inactiveColorPrimary: Theme.of(context).colorScheme.surfaceVariant,
       ),
       PersistentBottomNavBarItem(
         icon: const Icon(Icons.search),
-        title: ("Search"),
-        activeColorPrimary: Colors.blue,
-        inactiveColorPrimary: Colors.grey,
+        activeColorPrimary: Theme.of(context).colorScheme.primary,
+        inactiveColorPrimary: Theme.of(context).colorScheme.surfaceVariant,
       ),
     ];
   }
