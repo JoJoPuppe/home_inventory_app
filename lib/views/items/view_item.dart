@@ -62,6 +62,27 @@ class ViewItemState extends State<ViewItem> {
     }
   }
 
+  void _onEdit(Item item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditItem(item: item)),
+    );
+  }
+
+  void _notify(String message) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text(message)));
+  }
+
+  void _onDelete(Item item) async {
+    Item deletedItem = await CreateItemService.deleteItem(context, item.itemId);
+      setState(() {
+        newItems = CreateItemService.getChildren(context, currentItem.itemId);
+      });
+    _notify("Item ${deletedItem.name} deleted.");
+  }
+
   Image? getBackgroundImage(Item item) {
     if (item.imageLGPath != null) {
       return Image.network(
@@ -357,6 +378,8 @@ class ViewItemState extends State<ViewItem> {
                         return ListItem(
                           item: items[index],
                           onTap: _onItemTap,
+                          onEdit: _onEdit,
+                          onDelete: _onDelete,
                           apiDomain: apiDomain,
                           context: context
                         );

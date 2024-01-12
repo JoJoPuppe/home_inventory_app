@@ -4,6 +4,7 @@ import '/services/homeinventory_api_service.dart'; // Import the file where you 
 import '/views/items/add_item.dart';
 import '/views/items/view_item.dart';
 import '/models/item_model.dart';
+import '/views/items/edit_item.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_screen.dart';
@@ -52,6 +53,24 @@ class _HomeViewState extends State<HomeView> {
       )
     );
   }
+  void _onEdit(Item item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditItem(item: item)),
+    );
+  }
+  void _notify(String message) {
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text(message)));
+  }
+
+  void _onDelete(Item item) async {
+    Item deletedItem = await CreateItemService.deleteItem(context, item.itemId);
+    _notify("Item ${deletedItem.name} deleted.");
+    _fetchInitialData();
+  }
+
   Future<void> _addNewItem(BuildContext context) async {
     final addItemResult = await Navigator.push(
       context,
@@ -112,7 +131,8 @@ class _HomeViewState extends State<HomeView> {
       ? ListView.builder(
           itemCount: _items.length,
           itemBuilder: (context, index) {
-            return ListItem(item: _items[index], onTap: _onItemTap2, apiDomain: apiDomain, context: context);
+            return ListItem(item: _items[index],
+              onEdit: _onEdit, onDelete: _onDelete, onTap: _onItemTap2, apiDomain: apiDomain, context: context);
           },
         )
       : LayoutBuilder(

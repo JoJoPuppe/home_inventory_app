@@ -57,7 +57,8 @@ class TakePictureScreenState extends State<TakePictureScreen>
       if (mounted) setState(() {});
     });
 
-    _currentFlashMode = _controller!.value.flashMode;
+    // _currentFlashMode = _controller!.value.flashMode;
+    _currentFlashMode = FlashMode.off;
     // Initialize controller
     try {
       await cameraController.initialize();
@@ -111,6 +112,7 @@ class TakePictureScreenState extends State<TakePictureScreen>
     }
     try {
       XFile file = await cameraController.takePicture();
+      cameraController.setFlashMode(FlashMode.off);
       return file;
     } on CameraException catch (e) {
       print('Error occured while taking picture: $e');
@@ -118,21 +120,59 @@ class TakePictureScreenState extends State<TakePictureScreen>
     }
   }
 
+  void _showCameraException(CameraException e) {
+    showInSnackBar('Error: ${e.code}\n${e.description}');
+  }
+
+  void showInSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+Future<void> setFlashMode(FlashMode mode) async {
+    if (_controller == null) {
+      return;
+    }
+
+    try {
+      await _controller!.setFlashMode(mode);
+    } on CameraException catch (e) {
+      _showCameraException(e);
+      rethrow;
+    }
+  }
+
+  void onSetFlashModeButtonPressed(FlashMode mode) {
+    setFlashMode(mode).then((_) {
+      if (mounted) {
+        setState(() {});
+      }
+      showInSnackBar('Flash mode set to ${mode.toString().split('.').last}');
+    });
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a Picture')),
+      // appBar: AppBar(title: const Text('Take a Picture')),
       backgroundColor: Colors.black,
       // You must wait until the controller is initialized before displaying the
       // camera preview. Use a FutureBuilder to display a loading spinner until the
       // controller has finished initializing.
       body: _isCameraInitialized
-          ? Column(children: [
+          ? Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
               AspectRatio(
                 aspectRatio: 1 / _controller!.value.aspectRatio,
                 child: Stack(children: [
-                  CameraPreview(
-                    _controller!,
+                  Center(
+                    child: CameraPreview(
+                      _controller!,
+                    ),
                   ),
                   cameraOverlay(padding: 0, aspectRatio: 1, color: Colors.black.withOpacity(0.8)),
                   Padding(
@@ -145,23 +185,21 @@ class TakePictureScreenState extends State<TakePictureScreen>
                           alignment: Alignment.bottomCenter,
                           child: InkWell(
                             onTap: () async {
-                              await _controller!.setFocusMode(FocusMode.locked);
-                              await _controller!.setExposureMode(ExposureMode.locked);
+                              _controller!.setFocusMode(FocusMode.locked);
+                              _controller!.setExposureMode(ExposureMode.locked);
                               XFile? rawImage = await takePicture();
-                              if (rawImage != null) {
-                                await _controller?.setFlashMode(FlashMode.off);
-                              }
-                              await _controller!.setFocusMode(FocusMode.auto);
-                              await _controller!.setExposureMode(ExposureMode.auto);
-
+                              // if (rawImage != null) {
+                              //   await _controller?.setFlashMode(FlashMode.off);
+                              // }
+                              _controller!.setFocusMode(FocusMode.auto);
+                              _controller!.setExposureMode(ExposureMode.auto);
                               File imageFile = File(rawImage!.path);
-
                               if (!mounted) return;
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
-                                      DisplayPictureScreen(imagePath: imageFile.path),
+                                      DisplayPictureScreen(imagePath: imageFile.path, controller: _controller),
                                 ),
                               );
                             },
@@ -174,48 +212,52 @@ class TakePictureScreenState extends State<TakePictureScreen>
                             ),
                           ),
                         ),
+                                      Row(
+                children: <Widget>[
+                  IconButton(
+                    icon: const Icon(Icons.flash_off),
+                    color: _controller?.value.flashMode == FlashMode.off
+                        ? Colors.orange
+                        : Colors.blue,
+                    onPressed: _controller != null
+                        ? () => onSetFlashModeButtonPressed(FlashMode.off)
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.flash_auto),
+                    color: _controller?.value.flashMode == FlashMode.auto
+                        ? Colors.orange
+                        : Colors.blue,
+                    onPressed: _controller != null
+                        ? () => onSetFlashModeButtonPressed(FlashMode.auto)
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.flash_on),
+                    color: _controller?.value.flashMode == FlashMode.always
+                        ? Colors.orange
+                        : Colors.blue,
+                    onPressed: _controller != null
+                        ? () => onSetFlashModeButtonPressed(FlashMode.always)
+                        : null,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.highlight),
+                    color: _controller?.value.flashMode == FlashMode.torch
+                        ? Colors.orange
+                        : Colors.blue,
+                    onPressed: _controller != null
+                        ? () => onSetFlashModeButtonPressed(FlashMode.torch)
+                        : null,
+                  ),
+                ],
+              ),
+
                       ],
                     ),
                   )
                 ]),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  InkWell(
-                    onTap: () async {
-                      setState(() {
-                        _currentFlashMode = FlashMode.off;
-                      });
-                      await _controller!.setFlashMode(
-                        FlashMode.off,
-                      );
-                    },
-                    child: Icon(
-                      Icons.flash_off,
-                      color: _currentFlashMode == FlashMode.off
-                          ? Colors.amber
-                          : Colors.white,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () async {
-                      setState(() {
-                        _currentFlashMode = FlashMode.always;
-                      });
-                      await _controller!.setFlashMode(
-                        FlashMode.always,
-                      );
-                    },
-                    child: Icon(
-                      Icons.flash_on,
-                      color: _currentFlashMode == FlashMode.always
-                          ? Colors.amber
-                          : Colors.white,
-                    ),
-                  ),
-                ],
-              )
             ])
           : const Center(
               child: Text(
@@ -230,8 +272,9 @@ class TakePictureScreenState extends State<TakePictureScreen>
 // A widget that displays the picture taken by the user.
 class DisplayPictureScreen extends StatefulWidget {
   final String imagePath;
+  final CameraController? controller;
 
-  const DisplayPictureScreen({Key? key, required this.imagePath})
+  const DisplayPictureScreen({Key? key, required this.imagePath, required this.controller})
       : super(key: key);
 
   @override
@@ -244,6 +287,7 @@ class DisplayPictureScreenState extends State<DisplayPictureScreen> {
   @override
   void initState() {
     super.initState();
+    widget.controller!.setFlashMode(FlashMode.off);
     _cropImageFuture = cropToAspect1(widget.imagePath);
   }
 

@@ -42,6 +42,52 @@ class CreateItemService {
     }
   }
 
+  static Future<String> updateItem(BuildContext context, Map<String, dynamic> data, int? id) async {
+    // Pick an image
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    final url = Uri.parse('$apiDomain/items/$id');
+    final request = http.MultipartRequest('PUT', url);
+
+    if (data.containsKey('image') && data['image'] != null) {
+      // Create MultipartRequest
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'image', // Field name for the file
+          data['image'],
+          filename: 'upload.jpg', // Optional: customize the file name
+        ),
+      );
+    }
+    if (data.containsKey('parent_item_id')) {
+      if (data['parent_item_id'] != null && data['parent_item_id'] != 'null') {
+        request.fields['parent_item_id'] = data['parent_item_id'];
+      }
+    }
+    if (data.containsKey('label_id')) {
+      if (data['label_id'] != null && data['label_id'] != 'null') {
+        request.fields['label_id'] = data['label_id'];
+      }
+    }
+    if (data.containsKey('comment')) {
+      if (data['comment'] != null && data['comment'] != 'null') {
+        request.fields['comment'] = data['comment'];
+      }
+    }
+    if (data.containsKey('name')) {
+      if (data['name'] != null && data['name'] != 'null') {
+        request.fields['name'] = data['name'];
+      }
+    }
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      return data['name'];
+    } else {
+      throw Exception('Failed to create item.');
+    }
+  }
+
   static Future<List<Item>> getChildren(BuildContext context, int? id) async {
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
     id = id ?? 0;
@@ -94,5 +140,17 @@ class CreateItemService {
       throw Exception('Failed to load items.');
     }
 
+  }
+  static Future<Item> deleteItem(BuildContext context, int id) async {
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    final url = Uri.parse('$apiDomain/items/$id');
+    final response = await http.delete(url);
+    if (response.statusCode == 200) {
+      final dynamic data = jsonDecode(response.body);
+      final Item item = Item.fromJson(data);
+      return item;
+    } else {
+      throw Exception('Failed to load item.');
+    }
   }
 }
