@@ -9,6 +9,7 @@ import '/views/items/list_item.dart';
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import '/views/items/add_item.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import '/widgets/toast.dart';
 
 class ViewItem extends StatefulWidget {
   final Item item;
@@ -62,25 +63,29 @@ class ViewItemState extends State<ViewItem> {
     }
   }
 
-  void _onEdit(Item item) {
-    Navigator.push(
+  void _onEdit(Item item) async {
+    bool result =await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditItem(item: item)),
     );
+    if (result) {
+      setState(() {
+          newItems = CreateItemService.getChildren(context, currentItem.itemId);
+      });
+      if (!mounted) return;
+      showSnackBar(context, "Item edited", "success");
+    }
   }
 
-  void _notify(String message) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text(message)));
-  }
 
   void _onDelete(Item item) async {
-    Item deletedItem = await CreateItemService.deleteItem(context, item.itemId);
+    // Replace with FutureBuilder to handle exceptions
+    await CreateItemService.deleteItem(context, item.itemId);
       setState(() {
         newItems = CreateItemService.getChildren(context, currentItem.itemId);
       });
-    _notify("Item ${deletedItem.name} deleted.");
+    if (!mounted) return;
+    showSnackBar(context, "Item deleted.", "success");
   }
 
   Image? getBackgroundImage(Item item) {
@@ -145,11 +150,13 @@ class ViewItemState extends State<ViewItem> {
       newItems = CreateItemService.getChildren(context, item.itemId);();
       currentItem = item;
     });
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut
+      );
+    }
   }
 
   void _handleBack() {
@@ -173,12 +180,6 @@ class ViewItemState extends State<ViewItem> {
 
   Future<void> _addNewItem(BuildContext context) async {
     addItem = true;
-    // final addItemResult = await Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => AddItem(parentItem: currentItem)
-    //   ),
-    // );
     final addItemResult = await PersistentNavBarNavigator.pushNewScreen(
       context,
       screen: AddItem(parentItem: currentItem),
@@ -186,14 +187,10 @@ class ViewItemState extends State<ViewItem> {
       pageTransitionAnimation: PageTransitionAnimation.fade,
     );
     addItem = false;
-    if (!mounted) return;
     if (addItemResult != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text('Added item: $addItemResult')));
-        setState(() {
-          newItems = CreateItemService.getChildren(context, currentItem.itemId);();
-        });
+      setState(() {
+        newItems = CreateItemService.getChildren(context, currentItem.itemId);();
+      });
     }
   }
   void _onSelected(String value) {
@@ -343,13 +340,11 @@ class ViewItemState extends State<ViewItem> {
             if (currentItem.comment != null)
             SliverToBoxAdapter(
               child:
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: Text(
-                    currentItem.comment!),
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                  currentItem.comment!),
                 ),
               ),
             ),

@@ -8,6 +8,8 @@ import '/views/items/edit_item.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_screen.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import '/widgets/toast.dart';
 
 
 class HomeView extends StatefulWidget {
@@ -72,19 +74,17 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _addNewItem(BuildContext context) async {
-    final addItemResult = await Navigator.push(
+    final addItemResult = await PersistentNavBarNavigator.pushNewScreen(
       context,
-      MaterialPageRoute(
-        builder: (context) => const AddItem()
-      ),
+      screen: const AddItem(),
+      withNavBar: false,
+      pageTransitionAnimation: PageTransitionAnimation.fade,
     );
     if (!mounted) return;
     if (addItemResult != null) {
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(SnackBar(backgroundColor: Colors.green, content: Text('Added item: $addItemResult')));
+      showSnackBar(context, "Item added successfully.", "success");
+      _refreshIndicatorKey.currentState?.show();
     }
-    _refreshIndicatorKey.currentState?.show();
   }
 
   @override

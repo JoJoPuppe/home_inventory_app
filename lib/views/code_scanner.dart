@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
+import 'package:permission_handler/permission_handler.dart';
+
 
 
 class ScannerWidget extends StatefulWidget {
@@ -14,6 +16,14 @@ class ScannerState extends State<ScannerWidget> {
   Code? result;
   int successScans = 0;
   int failedScans = 0;
+
+  void _checkPermissions() async {
+    const permission = Permission.camera;
+    if (await permission.isDenied) {
+      await permission.request();
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {

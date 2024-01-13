@@ -42,7 +42,7 @@ class CreateItemService {
     }
   }
 
-  static Future<String> updateItem(BuildContext context, Map<String, dynamic> data, int? id) async {
+  static Future<bool> updateItem(BuildContext context, Map<String, dynamic> data, int? id) async {
     // Pick an image
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
     final url = Uri.parse('$apiDomain/items/$id');
@@ -82,7 +82,7 @@ class CreateItemService {
     final response = await request.send();
 
     if (response.statusCode == 200) {
-      return data['name'];
+      return true;
     } else {
       throw Exception('Failed to create item.');
     }

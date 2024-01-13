@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import '/views/camera/camera_view.dart';
 import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
+import '/widgets/home_dialog.dart';
 
 class EditItem extends StatefulWidget {
   final Item item;
@@ -23,7 +24,7 @@ class EditItemState extends State<EditItem> {
   Item? parentItem;
   Item? initParentItem;
   final _formKey = GlobalKey<FormState>();
-  Future<String>? _sendResopnse;
+  Future<bool>? _sendResopnse;
   Image? _backgroundImage;
   Uint8List? _updatedImage;
   bool nameUpdated = false;
@@ -168,108 +169,115 @@ class EditItemState extends State<EditItem> {
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(48.0),
-                  child: SizedBox(
-                  height: 100,
-                  width: 100,
-                  child: _backgroundImage ?? const Icon(Icons.camera_alt)),
-                ),
+        child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+        return Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(48.0),
+                      child: SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: _backgroundImage ?? const Icon(Icons.camera_alt)),
+                    ),
+                  ),
+                  ListTile(
+                      leading: nameUpdated ? const Icon(Icons.check) : null,
+                      title: const Text(
+                            style: TextStyle(fontWeight: FontWeight.bold),'Name'),
+                      subtitle: Text(_nameController.text),
+                      trailing: const Icon(Icons.edit),
+                      onTap: () => _showEditDialog(_nameController),
+                    ),
+                  ListTile(
+                      leading: imageUpdated ? const Icon(Icons.check) : null,
+                      title: const Text('Photo'),
+                      subtitle: const Text('Retake photo'),
+                      trailing: const Icon(Icons.camera_alt),
+                      onTap: () async {
+                        final Uint8List? squareImage = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const TakePictureScreen(),
+                            ));
+                        if (squareImage != null) {
+                          setState(() {
+                            imageUpdated = true;
+                            _backgroundImage = Image.memory(squareImage);
+                            _updatedImage = squareImage;
+                          });
+                        }
+                      },
+                    ),
+                  ListTile(
+                      leading: commentUpdated ? const Icon(Icons.check) : null,
+                      title: const Text('Comment'),
+                      subtitle: Text(_commentController.text == '' ? 'No comment' : _commentController.text),
+                      trailing: const Icon(Icons.edit),
+                      onTap: () => _showEditDialog(_commentController),
+                    ),
+                  ListTile(
+                      leading: codeUpdated ? const Icon(Icons.check) : null,
+                      title: const Text('Barcode'),
+                      subtitle: Text(_codeController.text),
+                      trailing: const Icon(Icons.qr_code),
+                      onTap: () async {
+                        final code = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ScannerWidget(),
+                            ));
+                        _codeController.text = code;
+                      }
+                    ),
+                  ListTile(
+                      leading: parentUpdated ? const Icon(Icons.check) : null,
+                      title: const Text('Parent Item'),
+                      subtitle: 
+                        parentItem == null
+                            ? const Text('No item selected')
+                            : Text(parentItem!.name),
+                      trailing: const Icon(Icons.edit),
+                      onTap: () async {
+                        openSelectParentModal();
+                      },
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      child: const Center(child: Text('Update')),
+                    ),
+                  ),
+                  // if (_message.isNotEmpty)
+                  //   Text(_message),
+                ],
               ),
-              ListTile(
-                  leading: nameUpdated ? const Icon(Icons.check) : null,
-                  title: const Text(
-                        style: TextStyle(fontWeight: FontWeight.bold),'Name'),
-                  subtitle: Text(_nameController.text),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () => _showEditDialog(_nameController),
-                ),
-              ListTile(
-                  leading: imageUpdated ? const Icon(Icons.check) : null,
-                  title: const Text('Photo'),
-                  subtitle: const Text('Retake photo'),
-                  trailing: const Icon(Icons.camera_alt),
-                  onTap: () async {
-                    final Uint8List? squareImage = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const TakePictureScreen(),
-                        ));
-                    if (squareImage != null) {
-                      setState(() {
-                        imageUpdated = true;
-                        _backgroundImage = Image.memory(squareImage);
-                        _updatedImage = squareImage;
-                      });
-                    }
-                  },
-                ),
-              ListTile(
-                  leading: commentUpdated ? const Icon(Icons.check) : null,
-                  title: const Text('Comment'),
-                  subtitle: Text(_commentController.text == '' ? 'No comment' : _commentController.text),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () => _showEditDialog(_commentController),
-                ),
-              ListTile(
-                  leading: codeUpdated ? const Icon(Icons.check) : null,
-                  title: const Text('Barcode'),
-                  subtitle: Text(_codeController.text),
-                  trailing: const Icon(Icons.qr_code),
-                  onTap: () async {
-                    final code = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ScannerWidget(),
-                        ));
-                    _codeController.text = code;
-                  }
-                ),
-              ListTile(
-                  leading: parentUpdated ? const Icon(Icons.check) : null,
-                  title: const Text('Parent Item'),
-                  subtitle: 
-                    parentItem == null
-                        ? const Text('No item selected')
-                        : Text(parentItem!.name),
-                  trailing: const Icon(Icons.edit),
-                  onTap: () async {
-                    openSelectParentModal();
-                  },
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Center(child: Text('Update')),
-                ),
-              ),
-              // if (_message.isNotEmpty)
-              //   Text(_message),
-              if (_sendResopnse != null) buildFutureBuilder(),
-            ],
-          ),
-        ),
+            ),
+            if (_sendResopnse != null) buildFutureBuilder(constraints),
+          ],
+        );
+      }),
       ),
     );
   }
 
-  FutureBuilder<String> buildFutureBuilder() {
-    return FutureBuilder<String>(
+  FutureBuilder<bool> buildFutureBuilder(BoxConstraints constraints) {
+    return FutureBuilder<bool>(
       future: _sendResopnse,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return Text(snapshot.data!);
+          return homeDialog(context, constraints, "Item edited successfully");
         } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
+          return Center(child: Text(snapshot.error.toString()));
         }
-        return const CircularProgressIndicator();
+        return const LinearProgressIndicator();
       },
     );
   }

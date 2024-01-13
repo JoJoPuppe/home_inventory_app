@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '/views/items/edit_item.dart';
 import '/models/item_model.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -33,20 +32,6 @@ class ListItem extends StatelessWidget {
     onEdit(item);
   }
 
-  void _onSelected(String value) {
-    switch (value) {
-      case 'Edit':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditItem(item: item),
-          ),
-        );
-        break;
-      case 'Delete':
-        break;
-    }
-  }
 // item.childrenCount != null && item.childrenCount! == 0
   @override
   Widget build(BuildContext context) {

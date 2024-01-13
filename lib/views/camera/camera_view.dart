@@ -20,7 +20,6 @@ class TakePictureScreenState extends State<TakePictureScreen>
     with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isCameraInitialized = false;
-  FlashMode? _currentFlashMode;
 
   Future resetTorch() async {
       final currentFlash = _controller?.value.flashMode;
@@ -58,7 +57,6 @@ class TakePictureScreenState extends State<TakePictureScreen>
     });
 
     // _currentFlashMode = _controller!.value.flashMode;
-    _currentFlashMode = FlashMode.off;
     // Initialize controller
     try {
       await cameraController.initialize();
