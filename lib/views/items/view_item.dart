@@ -72,8 +72,6 @@ class ViewItemState extends State<ViewItem> {
       setState(() {
           newItems = CreateItemService.getChildren(context, currentItem.itemId);
       });
-      if (!mounted) return;
-      showSnackBar(context, "Item edited", "success");
     }
   }
 

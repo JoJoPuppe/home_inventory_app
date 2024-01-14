@@ -41,7 +41,7 @@ Widget homeDialog(BuildContext context, BoxConstraints constraints, String messa
                         const Size.fromHeight(40),
                       ),
                     ),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => Navigator.pop(context, true),
                     child: const Text(
                       style: TextStyle(
                         color: Colors.white,
