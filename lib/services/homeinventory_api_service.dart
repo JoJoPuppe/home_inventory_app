@@ -94,7 +94,6 @@ class CreateItemService {
     final url = Uri.parse('$apiDomain/items/children/$id');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      // final responseBody = utf8.decode(response.bodyBytes);
       final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
@@ -109,7 +108,7 @@ class CreateItemService {
     final url = Uri.parse('$apiDomain/items/');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
     } else {
@@ -121,7 +120,7 @@ class CreateItemService {
     final url = Uri.parse('$apiDomain/items/$id');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final dynamic data = jsonDecode(response.body);
+      final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
       final Item item = Item.fromJson(data);
       return item;
     } else {
@@ -134,7 +133,7 @@ class CreateItemService {
     final url = Uri.parse('$apiDomain/search/?query=$query');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+      final List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
     } else {
@@ -147,7 +146,7 @@ class CreateItemService {
     final url = Uri.parse('$apiDomain/items/$id');
     final response = await http.delete(url);
     if (response.statusCode == 200) {
-      final dynamic data = jsonDecode(response.body);
+      final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
       final Item item = Item.fromJson(data);
       return item;
     } else {
