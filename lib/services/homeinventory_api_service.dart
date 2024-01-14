@@ -128,8 +128,10 @@ class CreateItemService {
     }
   }
   static Future<List<Item>> searchItems(BuildContext context, String? query) async {
+    if (query == null || query.isEmpty) {
+      return [];
+    }
     String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
-
     final url = Uri.parse('$apiDomain/search/?query=$query');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -137,7 +139,8 @@ class CreateItemService {
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
     } else {
-      throw Exception('Failed to load items.');
+      String errorMessage = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
+      throw Exception('Failed to load items. $errorMessage');
     }
 
   }

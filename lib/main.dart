@@ -58,11 +58,11 @@ class _InventoryHomePageState extends State<InventoryHomePage> {
   @override
   Widget build(BuildContext context) {
     return PersistentTabView(
-        navBarHeight: 70,
+        navBarHeight: 60,
         context,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.background, 
         controller: _controller,
-        // popAllScreensOnTapAnyTabs: true,
+        popAllScreensOnTapAnyTabs: true,
         screens: const [
           HomeView(),
           ScannerWidget(),

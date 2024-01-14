@@ -9,7 +9,6 @@ import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import '/views/settings/settings_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
-import '/widgets/toast.dart';
 
 
 class HomeView extends StatefulWidget {
@@ -55,11 +54,16 @@ class _HomeViewState extends State<HomeView> {
       )
     );
   }
-  void _onEdit(Item item) {
-    Navigator.push(
+  void _onEdit(Item item) async {
+    bool result = await PersistentNavBarNavigator.pushNewScreen(
       context,
-      MaterialPageRoute(builder: (context) => EditItem(item: item)),
+      screen: EditItem(item: item),
+      withNavBar: false,
+      pageTransitionAnimation: PageTransitionAnimation.fade,
     );
+    if (result) {
+      _refreshIndicatorKey.currentState?.show();
+    }
   }
   void _notify(String message) {
       ScaffoldMessenger.of(context)
@@ -82,7 +86,6 @@ class _HomeViewState extends State<HomeView> {
     );
     if (!mounted) return;
     if (addItemResult != null) {
-      showSnackBar(context, "Item added successfully.", "success");
       _refreshIndicatorKey.currentState?.show();
     }
   }
