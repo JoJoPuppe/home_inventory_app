@@ -53,28 +53,29 @@ class InventoryHomePage extends StatefulWidget {
 
 class _InventoryHomePageState extends State<InventoryHomePage> {
   final PersistentTabController _controller =
-        PersistentTabController(initialIndex: 0);
+      PersistentTabController(initialIndex: 0);
 
   @override
   Widget build(BuildContext context) {
     return PersistentTabView(
-        navBarHeight: 60,
-        context,
-        backgroundColor: Theme.of(context).colorScheme.background, 
-        controller: _controller,
-        popAllScreensOnTapAnyTabs: true,
-        screens: const [
-          HomeView(),
-          ScannerWidget(),
-          SearchView(),
-        ],
-        items: _navBarItems(),
-        decoration: NavBarDecoration(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        navBarStyle: NavBarStyle.style2,
+      navBarHeight: 60,
+      context,
+      backgroundColor: Theme.of(context).colorScheme.background,
+      controller: _controller,
+      popAllScreensOnTapAnyTabs: true,
+      screens: const [
+        HomeView(),
+        ScannerWidget(goto: true),
+        SearchView(),
+      ],
+      items: _navBarItems(),
+      decoration: NavBarDecoration(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      navBarStyle: NavBarStyle.style2,
     );
   }
+
   List<PersistentBottomNavBarItem> _navBarItems() {
     return [
       PersistentBottomNavBarItem(

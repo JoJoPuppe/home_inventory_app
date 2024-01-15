@@ -4,12 +4,14 @@ import '/provider/settings_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '/models/item_model.dart';
-import '/models/search_result.dart';
 
 class CreateItemService {
-  static Future<String> addItem(BuildContext context, Map<String, dynamic> data) async {
+  static Future<String> addItem(
+      BuildContext context, Map<String, dynamic> data) async {
     // Pick an image
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/items/');
     final request = http.MultipartRequest('POST', url);
 
@@ -23,7 +25,7 @@ class CreateItemService {
         ),
       );
     }
-      // Add other fields if needed
+    // Add other fields if needed
     request.fields['name'] = data['name'] ?? '';
     request.fields['comment'] = data['comment'] ?? '';
     request.fields['label_id'] = data['label_id'] ?? '';
@@ -42,9 +44,12 @@ class CreateItemService {
     }
   }
 
-  static Future<bool> updateItem(BuildContext context, Map<String, dynamic> data, int? id) async {
+  static Future<bool> updateItem(
+      BuildContext context, Map<String, dynamic> data, int? id) async {
     // Pick an image
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/items/$id');
     final request = http.MultipartRequest('PUT', url);
 
@@ -89,7 +94,9 @@ class CreateItemService {
   }
 
   static Future<List<Item>> getChildren(BuildContext context, int? id) async {
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     id = id ?? 0;
     final url = Uri.parse('$apiDomain/items/children/$id');
     final response = await http.get(url);
@@ -100,11 +107,12 @@ class CreateItemService {
     } else {
       throw Exception('Failed to load items.');
     }
-
   }
 
   static Future<List<Item>> getItems(BuildContext context) async {
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/items/');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -115,8 +123,11 @@ class CreateItemService {
       throw Exception('Failed to load items.');
     }
   }
+
   static Future<Item> getItem(BuildContext context, int id) async {
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/items/$id');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -127,11 +138,39 @@ class CreateItemService {
       throw Exception('Failed to load item.');
     }
   }
-  static Future<List<Item>> searchItems(BuildContext context, String? query) async {
+
+  static Future<Item> getItemByLabelCode(
+      BuildContext context, String labelId) async {
+    // try to cast to lableId to int
+    try {
+      int.parse(labelId);
+    } catch (e) {
+      throw Exception('only number codes are allowed');
+    }
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
+    final url = Uri.parse('$apiDomain/items/label/$labelId');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      final dynamic data = jsonDecode(utf8.decode(response.bodyBytes));
+      final Item item = Item.fromJson(data);
+      return item;
+    } else {
+      String errorMessage =
+          jsonDecode(utf8.decode(response.bodyBytes))['detail'];
+      throw Exception(errorMessage);
+    }
+  }
+
+  static Future<List<Item>> searchItems(
+      BuildContext context, String? query) async {
     if (query == null || query.isEmpty) {
       return [];
     }
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/search/?query=$query');
     final response = await http.get(url);
     if (response.statusCode == 200) {
@@ -139,13 +178,16 @@ class CreateItemService {
       final List<Item> items = data.map((item) => Item.fromJson(item)).toList();
       return items;
     } else {
-      String errorMessage = jsonDecode(utf8.decode(response.bodyBytes))['detail'];
+      String errorMessage =
+          jsonDecode(utf8.decode(response.bodyBytes))['detail'];
       throw Exception('Failed to load items. $errorMessage');
     }
-
   }
+
   static Future<Item> deleteItem(BuildContext context, int id) async {
-    String apiDomain = Provider.of<SettingsProvider>(context, listen: false).currentSettings.serverURL;
+    String apiDomain = Provider.of<SettingsProvider>(context, listen: false)
+        .currentSettings
+        .serverURL;
     final url = Uri.parse('$apiDomain/items/$id');
     final response = await http.delete(url);
     if (response.statusCode == 200) {
@@ -153,7 +195,7 @@ class CreateItemService {
       final Item item = Item.fromJson(data);
       return item;
     } else {
-      throw Exception('Failed to load item.');
+      throw Exception('Failed to delete item.');
     }
   }
 }
